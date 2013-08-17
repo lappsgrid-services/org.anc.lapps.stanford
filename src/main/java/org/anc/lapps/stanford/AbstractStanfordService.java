@@ -8,6 +8,8 @@ import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
 import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Properties;
 
 /**
@@ -15,28 +17,31 @@ import java.util.Properties;
  */
 public abstract class AbstractStanfordService implements WebService
 {
-    protected StanfordCoreNLP service;
+   protected StanfordCoreNLP service;
 
-    public AbstractStanfordService(String annotators)
-    {
-        Properties properties = new Properties();
-        properties.setProperty("annotators", annotators);
-        service = new StanfordCoreNLP(properties);
-    }
+   public AbstractStanfordService(String annotators)
+   {
+      Properties properties = new Properties();
+      properties.setProperty("annotators", annotators);
+      service = new StanfordCoreNLP(properties);
+   }
 
-    @Override
-    public Data execute(Data input)
-    {
-        Annotation document = new Annotation(input.getPayload());
-        service.annotate(document);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(4096);
-        service.prettyPrint(document, stream);
-        return new Data(Types.STANFORD, stream.toByteArray());
-    }
+//   @Override
+//   public Data execute(Data input)
+//   {
+//      Annotation document = new Annotation(input.getPayload());
+//      service.annotate(document);
+////      StringWriter stringWriter = new StringWriter();
+////      PrintWriter printWriter = new PrintWriter(stringWriter);
+////      service.prettyPrint(document, printWriter);
+////      return new Data(Types.STANFORD, stringWriter.toString());
+////      Annotation result = service.process(input.getPayload());
+//      return new Data(Types.STANFORD, document.toString());
+//   }
 
-    @Override
-    public Data configure(Data config)
-    {
-        return DataFactory.ok();
-    }
+   @Override
+   public Data configure(Data config)
+   {
+      return DataFactory.ok();
+   }
 }

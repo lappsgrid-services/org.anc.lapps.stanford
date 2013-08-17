@@ -6,7 +6,8 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
-import org.lappsgrid.utils.ResourceLoader;
+
+import org.anc.resource.ResourceLoader;
 
 import java.io.IOException;
 
@@ -26,10 +27,9 @@ public class StanfordTests
         {
             return;
         }
-        ResourceLoader loader = new ResourceLoader();
         try
         {
-            String text = loader.loadString("Bartok.txt");
+            String text = ResourceLoader.loadString("Bartok.txt");
             data = DataFactory.text(text);
         }
         catch (IOException e)
@@ -68,6 +68,6 @@ public class StanfordTests
         assertTrue(result.getPayload(), result.getDiscriminator() != Types.ERROR);
         String type = DiscriminatorRegistry.get(result.getDiscriminator());
         System.out.println("Return type is " + type);
-        System.out.println(result.getPayload());
+        System.out.println("Payload: " + result.getPayload());
     }
 }
