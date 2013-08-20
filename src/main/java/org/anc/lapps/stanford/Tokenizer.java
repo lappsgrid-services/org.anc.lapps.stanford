@@ -7,6 +7,8 @@ import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +18,12 @@ import java.util.List;
  */
 public class Tokenizer extends AbstractStanfordService
 {
+   private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
+
    public Tokenizer()
    {
       super("tokenize");
+      logger.info("Stanford tokenizer created.");
    }
 
    @Override
@@ -36,6 +41,7 @@ public class Tokenizer extends AbstractStanfordService
    @Override
    public Data execute(Data input)
    {
+      logger.info("Executing Stanford tokenizer.");
       Annotation document = new Annotation(input.getPayload());
       service.annotate(document);
       List<String> list = new ArrayList<String>();
@@ -48,6 +54,7 @@ public class Tokenizer extends AbstractStanfordService
       {
          list.add(token.toString());
       }
+      logger.info("Stanford tokenizer complete.");
       return DataFactory.stringList(list);
    }
 

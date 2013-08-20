@@ -8,6 +8,8 @@ import org.anc.lapps.util.LappsUtils;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -16,14 +18,18 @@ import java.util.*;
  */
 public class SentenceSplitter extends AbstractStanfordService
 {
+   private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
+
    public SentenceSplitter()
    {
       super("tokenize, ssplit");
+      logger.info("Standford sentence splitter created.");
    }
 
    @Override
    public Data execute(Data input)
    {
+      logger.info("Executing Stanford sentence splitter.");
       Annotation document = new Annotation(input.getPayload());
       service.annotate(document);
       List<String> list = new ArrayList<String>();
@@ -37,7 +43,7 @@ public class SentenceSplitter extends AbstractStanfordService
          list.add(sentence.toString());
       }
 //      String stringList = LappsUtils.makeStringList(list);
-
+      logger.info("Sentence splitter complete.");
       return DataFactory.stringList(list);
    }
 

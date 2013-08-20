@@ -7,6 +7,8 @@ import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +18,12 @@ import java.util.List;
  */
 public class Tagger extends AbstractStanfordService
 {
+   private static final Logger logger = LoggerFactory.getLogger(Tagger.class);
+
    public Tagger()
    {
       super("tokenize, ssplit, pos");
+      logger.info("Stanford tagger created.");
    }
 
    @Override
@@ -36,6 +41,7 @@ public class Tagger extends AbstractStanfordService
    @Override
    public Data execute(Data input)
    {
+      logger.info("Executing Stanford tagger.");
       Annotation document = new Annotation(input.getPayload());
       service.annotate(document);
       List<String> list = new ArrayList<String>();
@@ -49,6 +55,7 @@ public class Tagger extends AbstractStanfordService
          String pos = token.get(PartOfSpeechAnnotation.class);
          list.add(token.toString() + "/" + pos);
       }
+      logger.info("Stanford tagger complete.");
       return DataFactory.stringList(list);
    }
 }

@@ -6,6 +6,8 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -17,10 +19,12 @@ import java.util.Properties;
  */
 public abstract class AbstractStanfordService implements WebService
 {
+   private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
    protected StanfordCoreNLP service;
 
    public AbstractStanfordService(String annotators)
    {
+      logger.info("Creating AbstractStanfordService with annotators: {}", annotators);
       Properties properties = new Properties();
       properties.setProperty("annotators", annotators);
       service = new StanfordCoreNLP(properties);
