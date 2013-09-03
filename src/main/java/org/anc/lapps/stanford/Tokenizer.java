@@ -3,6 +3,7 @@ package org.anc.lapps.stanford;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
@@ -43,19 +44,38 @@ public class Tokenizer extends AbstractStanfordService
    {
       logger.info("Executing Stanford tokenizer.");
       Annotation document = new Annotation(input.getPayload());
-      service.annotate(document);
-      List<String> list = new ArrayList<String>();
-      List<CoreLabel> tokens = document.get(CoreAnnotations.TokensAnnotation.class);
-      if (tokens == null)
+      Data data = null;
+      StanfordCoreNLP service = null;
+      try
       {
-         return DataFactory.error("Stanford tokenizer returned null.");
+         service = pool.take();
+         service.annotate(document);
+         List<String> list = new ArrayList<String>();
+         List<CoreLabel> tokens = document.get(CoreAnnotations.TokensAnnotation.class);
+         if (tokens == null)
+         {
+            return DataFactory.error("Stanford tokenizer returned null.");
+         }
+         for (CoreMap token : tokens)
+         {
+            list.add(token.toString());
+         }
+         logger.info("Stanford tokenizer complete.");
+         data = DataFactory.stringList(list);
+         data.setDiscriminator(Types.STANFORD);
       }
-      for (CoreMap token : tokens)
+      catch (Exception e)
       {
-         list.add(token.toString());
+         data = DataFactory.error(e.getMessage());
       }
-      logger.info("Stanford tokenizer complete.");
-      return DataFactory.stringList(list);
+      finally
+      {
+         if (service != null)
+         {
+            pool.add(service);
+         }
+      }
+      return data;
    }
 
 }

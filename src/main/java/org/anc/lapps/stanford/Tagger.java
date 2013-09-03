@@ -3,6 +3,7 @@ package org.anc.lapps.stanford;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
@@ -43,19 +44,38 @@ public class Tagger extends AbstractStanfordService
    {
       logger.info("Executing Stanford tagger.");
       Annotation document = new Annotation(input.getPayload());
-      service.annotate(document);
-      List<String> list = new ArrayList<String>();
-      List<CoreLabel> tokens = document.get(TokensAnnotation.class);
-      if (tokens == null)
+      Data data = null;
+      StanfordCoreNLP service = null;
+      try
       {
-         return DataFactory.error("Stanford tokenizer returned null.");
+         service = pool.take();
+         service.annotate(document);
+         List<String> list = new ArrayList<String>();
+         List<CoreLabel> tokens = document.get(TokensAnnotation.class);
+         if (tokens == null)
+         {
+            return DataFactory.error("Stanford tokenizer returned null.");
+         }
+         for (CoreMap token : tokens)
+         {
+            String pos = token.get(PartOfSpeechAnnotation.class);
+            list.add(token.toString() + "/" + pos);
+         }
+         logger.info("Stanford tagger complete.");
+         data = DataFactory.stringList(list);
+         data.setDiscriminator(Types.STANFORD);
       }
-      for (CoreMap token : tokens)
+      catch (Exception e)
       {
-         String pos = token.get(PartOfSpeechAnnotation.class);
-         list.add(token.toString() + "/" + pos);
+         data = DataFactory.error(e.getMessage());
       }
-      logger.info("Stanford tagger complete.");
-      return DataFactory.stringList(list);
+      finally
+      {
+         if (service != null)
+         {
+            pool.add(service);
+         }
+      }
+      return data;
    }
 }

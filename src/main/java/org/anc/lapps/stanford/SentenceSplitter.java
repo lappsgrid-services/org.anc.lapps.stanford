@@ -31,20 +31,39 @@ public class SentenceSplitter extends AbstractStanfordService
    {
       logger.info("Executing Stanford sentence splitter.");
       Annotation document = new Annotation(input.getPayload());
-      service.annotate(document);
-      List<String> list = new ArrayList<String>();
-      List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-      if (sentences == null)
+      Data data = null;
+      StanfordCoreNLP service = null;
+      try
       {
-         return DataFactory.error("Stanford splitter returned null.");
+         service = pool.take();
+         service.annotate(document);
+         List<String> list = new ArrayList<String>();
+         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+         if (sentences == null)
+         {
+            return DataFactory.error("Stanford splitter returned null.");
+         }
+         for (CoreMap sentence : sentences)
+         {
+            list.add(sentence.toString());
+         }
+         data = DataFactory.stringList(list);
+         data.setDiscriminator(Types.STANFORD);
       }
-      for (CoreMap sentence : sentences)
+      catch (InterruptedException e)
       {
-         list.add(sentence.toString());
+         data = DataFactory.error(e.getMessage());
+      }
+      finally
+      {
+         if (service != null)
+         {
+            pool.add(service);
+         }
       }
 //      String stringList = LappsUtils.makeStringList(list);
       logger.info("Sentence splitter complete.");
-      return DataFactory.stringList(list);
+      return data;
    }
 
 

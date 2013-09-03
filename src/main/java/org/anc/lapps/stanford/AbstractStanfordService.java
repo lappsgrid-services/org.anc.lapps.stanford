@@ -13,6 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * @author Keith Suderman
@@ -20,14 +22,20 @@ import java.util.Properties;
 public abstract class AbstractStanfordService implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
-   protected StanfordCoreNLP service;
+   protected static final int POOL_SIZE = 4;
+//   protected StanfordCoreNLP service;
+   protected BlockingQueue<StanfordCoreNLP> pool;
 
    public AbstractStanfordService(String annotators)
    {
       logger.info("Creating AbstractStanfordService with annotators: {}", annotators);
       Properties properties = new Properties();
       properties.setProperty("annotators", annotators);
-      service = new StanfordCoreNLP(properties);
+      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
+      for (int i = 0; i < POOL_SIZE; ++i)
+      {
+         pool.add(new StanfordCoreNLP(properties));
+      }
    }
 
 //   @Override
@@ -46,6 +54,6 @@ public abstract class AbstractStanfordService implements WebService
    @Override
    public Data configure(Data config)
    {
-      return DataFactory.ok();
+      return DataFactory.error("Unsupported operation.");
    }
 }

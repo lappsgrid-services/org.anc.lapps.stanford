@@ -21,7 +21,7 @@ public class StanfordParserServiceTest
    private static final long OK = Types.OK;
    private static final long ERROR = Types.ERROR;
    private static final long PARAMETER = StanfordParserService.TEXT;
-   private static final long DOCUMENT = StanfordParserService.DOCUMENT;
+   private static final long DOCUMENT = StanfordParserService.STANFORD;
 
    @Test
    public void testData() throws IOException

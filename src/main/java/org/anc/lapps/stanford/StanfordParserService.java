@@ -22,7 +22,7 @@ public class StanfordParserService implements WebService
     public static final long ERROR = Types.ERROR;
     public static final long OK = Types.OK;
     public static final long TEXT = Types.TEXT;
-    public static final long DOCUMENT = Types.STANFORD;
+    public static final long STANFORD = Types.STANFORD;
     public static final long SENTENCE = Types.SENTENCE;
     public static final long TOKEN = Types.TOKEN;
     public static final long POS = Types.POS;
@@ -44,7 +44,7 @@ public class StanfordParserService implements WebService
     @Override
     public long[] produces()
     {
-        return new long[]{DOCUMENT};
+        return new long[]{STANFORD};
     }
 
     @Override
@@ -65,7 +65,7 @@ public class StanfordParserService implements WebService
         pipeline.annotate(document);
         ByteArrayOutputStream stream = new ByteArrayOutputStream(4096);
         pipeline.prettyPrint(document, stream);
-        return new Data(DOCUMENT, stream.toByteArray());
+        return new Data(STANFORD, stream.toByteArray());
     }
 
     @Override
