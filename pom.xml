@@ -9,16 +9,16 @@
     </parent>
     <groupId>org.anc.lapps.stanford</groupId>
     <artifactId>core-nlp</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>war</packaging>
-    <name>Tools: Stanford</name>
+    <name>Services: Stanford</name>
     <description>LAPPS wrapper for the core Stanford NLP tools.</description>
     <scm>
         <connection>https://github.com/ksuderman/org.anc.lapps.stanford.git</connection>
         <url>https://github.com/ksuderman/org.anc.lapps.stanford</url>
     </scm>
     <properties>
-        <lapps.version>1.0.1-SNAPSHOT</lapps.version>
+        <lapps.version>1.0.1</lapps.version>
     </properties>
     <build>
         <finalName>StanfordServices</finalName>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.anc.lapps</groupId>
             <artifactId>util</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.anc.stanford.corenlp</groupId>
