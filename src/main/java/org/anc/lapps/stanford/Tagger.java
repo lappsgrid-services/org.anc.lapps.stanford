@@ -5,6 +5,9 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
+import org.anc.lapps.serialization.Container;
+import org.anc.lapps.serialization.ProcessingStep;
+import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
@@ -30,7 +33,7 @@ public class Tagger extends AbstractStanfordService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.STANFORD, Types.TOKEN};
+      return new long[]{Types.TEXT};
    }
 
    @Override
@@ -43,27 +46,30 @@ public class Tagger extends AbstractStanfordService
    public Data execute(Data input)
    {
       logger.info("Executing Stanford tagger.");
-      Annotation document = new Annotation(input.getPayload());
+      Container container = createContainer(input);
+      if (container == null)
+      {
+         return input;
+      }
+      String text = container.getText();
+      Annotation document = new Annotation(text);
       Data data = null;
       StanfordCoreNLP service = null;
       try
       {
          service = pool.take();
          service.annotate(document);
-         List<String> list = new ArrayList<String>();
          List<CoreLabel> tokens = document.get(TokensAnnotation.class);
          if (tokens == null)
          {
             return DataFactory.error("Stanford tokenizer returned null.");
          }
-         for (CoreMap token : tokens)
-         {
-            String pos = token.get(PartOfSpeechAnnotation.class);
-            list.add(token.toString() + "/" + pos);
-         }
+         ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
+         step.getMetadata().put("produced by", "Stanford Tagger");
+         container.getSteps().add(step);
+
          logger.info("Stanford tagger complete.");
-         data = DataFactory.stringList(list);
-         data.setDiscriminator(Types.STANFORD);
+         data = DataFactory.json(container.toJson());
       }
       catch (Exception e)
       {

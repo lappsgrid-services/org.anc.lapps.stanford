@@ -1,20 +1,23 @@
 package org.anc.lapps.stanford;
 
+
+import org.anc.io.UTF8Reader;
+import org.anc.io.UTF8Writer;
+import org.anc.resource.ResourceLoader;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.lappsgrid.api.Data;
+import org.lappsgrid.api.WebService;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
+import org.lappsgrid.discriminator.Types;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.junit.*;
-import org.lappsgrid.api.*;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
-
-import org.anc.io.UTF8Reader;
-import org.anc.io.UTF8Writer;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class StanfordParserServiceTest
 {
@@ -37,7 +40,7 @@ public class StanfordParserServiceTest
       System.out.println(payload);
    }
 
-   @Test
+   @Ignore
    public void testTokenize() throws IOException
    {
       System.out.println("StanfordParserServiceTest.testTokenize");
@@ -52,11 +55,20 @@ public class StanfordParserServiceTest
       save("tokenize-split.txt", test("tokenize, ssplit"));
    }
 
-   @Ignore
+   @Test
    public void testTagger() throws IOException
    {
       System.out.println("StanfordParserServiceTest.testTagger");
       save("tagger", test("tokenize, ssplit, pos"));
+   }
+
+   @Test
+   public void testNER() throws IOException
+   {
+      System.out.println("StanfordParserServiceTest.testNER");
+//      save("ner", test("tokenize, ssplit, pos, lemma, ner"));
+      Data result = test("tokenize, ssplit, pos, lemma, ner");
+      System.out.println(result.getPayload());
    }
 
    @Ignore
@@ -82,12 +94,13 @@ public class StanfordParserServiceTest
    // Loads the test file into a Data object.
    protected Data getData() throws IOException
    {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      if (loader == null)
-      {
-         loader = StanfordParserServiceTest.class.getClassLoader();
-      }
-      InputStream stream = loader.getResourceAsStream("Bartok.txt");
+//      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+//      if (loader == null)
+//      {
+//         loader = StanfordParserServiceTest.class.getClassLoader();
+//      }
+//      InputStream stream = loader.getResourceAsStream("Bartok.txt");
+      InputStream stream = ResourceLoader.open("Bartok.txt");
       assertTrue(stream != null);
       UTF8Reader reader = new UTF8Reader(stream);
       try

@@ -1,7 +1,7 @@
 package org.anc.lapps.stanford;
 
-import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import org.anc.lapps.serialization.Container;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
@@ -9,9 +9,6 @@ import org.lappsgrid.discriminator.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -38,22 +35,29 @@ public abstract class AbstractStanfordService implements WebService
       }
    }
 
-//   @Override
-//   public Data execute(Data input)
-//   {
-//      Annotation document = new Annotation(input.getPayload());
-//      service.annotate(document);
-////      StringWriter stringWriter = new StringWriter();
-////      PrintWriter printWriter = new PrintWriter(stringWriter);
-////      service.prettyPrint(document, printWriter);
-////      return new Data(Types.STANFORD, stringWriter.toString());
-////      Annotation result = service.process(input.getPayload());
-//      return new Data(Types.STANFORD, document.toString());
-//   }
-
    @Override
    public Data configure(Data config)
    {
       return DataFactory.error("Unsupported operation.");
+   }
+
+   protected Container createContainer(Data input)
+   {
+      Container container = null;
+      long inputType = input.getDiscriminator();
+      if (inputType == Types.ERROR)
+      {
+         return null;
+      }
+      else if (inputType == Types.TEXT)
+      {
+         container = new Container();
+         container.setText(input.getPayload());
+      }
+      else if (inputType == Types.JSON)
+      {
+         container = new Container(input.getPayload());
+      }
+      return container;
    }
 }
