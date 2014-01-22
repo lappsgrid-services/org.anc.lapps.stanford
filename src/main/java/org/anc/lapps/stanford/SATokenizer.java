@@ -40,7 +40,6 @@ public class SATokenizer implements WebService
       for (CoreLabel label; ptbt.hasNext(); )
       {
          label = (CoreLabel) ptbt.next();
-         logger.info(label.toString());
          tokens.add(label);
       }
       if (tokens.size() == 0)
@@ -51,7 +50,6 @@ public class SATokenizer implements WebService
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
       step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Standalone PTBTokenizer");
       container.getSteps().add(step);
-      logger.info(container.toJson());
       data = DataFactory.json(container.toJson());
       
       return data;

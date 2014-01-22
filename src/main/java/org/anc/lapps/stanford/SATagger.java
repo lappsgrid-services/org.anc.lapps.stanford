@@ -76,13 +76,21 @@ public class SATagger implements WebService
          labels.add(new LappsCoreLabel(a));
       }
       
-      MaxentTagger tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
+      MaxentTagger tagger;
+      try
+      {
+         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
+      }
+      catch (OutOfMemoryError e)
+      {
+         // TODO: handle exception
+         return DataFactory.error("Ran out of memory training MaxentTagger.");
+      }
       tagger.tagCoreLabels(labels);
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
       step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
       container.getSteps().add(step);
-      logger.info(container.toJson());
       data = DataFactory.json(container.toJson());
       
       return data;
@@ -111,7 +119,7 @@ public class SATagger implements WebService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.TEXT};
+      return new long[]{Types.TOKEN};
    }
 
    @Override
