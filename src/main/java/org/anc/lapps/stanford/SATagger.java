@@ -1,6 +1,8 @@
 package org.anc.lapps.stanford;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,13 +85,13 @@ public class SATagger implements WebService
       }
       catch (OutOfMemoryError e)
       {
-         // TODO: handle exception
          return DataFactory.error("Ran out of memory training MaxentTagger.");
       }
       tagger.tagCoreLabels(labels);
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
       step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
+      step.getMetadata().put("contains", "POS");
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       
@@ -137,11 +139,17 @@ public class SATagger implements WebService
    public static void main(String[] args) throws IOException
    {
       WebService tokenizer = new SATokenizer();
-      String inputText = ResourceLoader.loadString("blog-monastery.txt");
+      String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
       Data tokenizerInput = DataFactory.text(inputText);
       Data tokenizerResult = tokenizer.execute(tokenizerInput);
       
       WebService service = new SATagger();
       Data result = service.execute(tokenizerResult);
+      Container container = new Container(result.getPayload());
+      
+      File output = new File("src/main/resources/blog-jet-lag_tagged.json");
+      PrintWriter out = new PrintWriter(output);
+      out.println(container.toJson());
+      out.close();
    }
 }

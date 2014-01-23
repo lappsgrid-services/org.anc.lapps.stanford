@@ -46,6 +46,8 @@ public class SATaggerTest
 
       assertTrue(payload, resultType != Types.ERROR);
       assertTrue("Expected JSON", resultType == Types.JSON);
+      Container container = new Container(payload);
+      System.out.println(container.toPrettyJson());
       System.out.println("Time spent : " + (System.nanoTime() - ticks)/1e9 + "s");
    }
 
