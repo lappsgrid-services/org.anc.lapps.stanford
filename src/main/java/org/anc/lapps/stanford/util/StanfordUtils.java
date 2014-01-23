@@ -56,7 +56,6 @@ public class StanfordUtils
       {
          labels.add(new LappsCoreLabel(a));
       }
-      
       return labels;
    }
 }

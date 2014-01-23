@@ -11,13 +11,6 @@ public class LappsCoreLabel extends CoreLabel
 {
    private String id;
    
-   LappsCoreLabel(String word, String id)
-   {
-      super();
-      this.setWord(word);
-      this.setId(id);
-   }
-   
    public LappsCoreLabel(Annotation a)
    {
       super();
@@ -30,6 +23,10 @@ public class LappsCoreLabel extends CoreLabel
       if (features.get(Features.PART_OF_SPEECH) != null)
       {
          this.setTag((String) features.get(Features.PART_OF_SPEECH));
+      }
+      if (features.get("ner") != null)
+      {
+         this.setNER((String) features.get("ner"));
       }
    }
 
