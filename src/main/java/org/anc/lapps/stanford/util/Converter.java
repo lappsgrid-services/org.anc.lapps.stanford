@@ -4,9 +4,11 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasOffset;
 import edu.stanford.nlp.util.CoreMap;
+
 import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
+import org.anc.lapps.stanford.LappsCoreLabel;
 import org.anc.util.IDGenerator;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
@@ -55,6 +57,32 @@ public class Converter
          Annotation annotation = new Annotation();
          annotation.setLabel(Annotations.TOKEN);
          annotation.setId(id.generate("tok"));
+         int start = (token.beginPosition());
+         int end = (token.endPosition());
+//         String original = text.substring(start, end);
+         annotation.setStart(start);
+         annotation.setEnd(end);
+
+         Map<String,String> features = annotation.getFeatures();
+         add(features, Features.LEMMA, token.lemma());
+         add(features, "category", token.category());
+         add(features, Features.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+
+         add(features, "ner", token.ner());
+         add(features, "word", token.word());
+//         add(features, "original", original);
+         step.addAnnotation(annotation);
+      }
+      return step;
+   }
+   
+   public static ProcessingStep addTokensWithIds(ProcessingStep step, List<LappsCoreLabel> tokens)
+   {
+      for (LappsCoreLabel token : tokens)
+      {
+         Annotation annotation = new Annotation();
+         annotation.setLabel(Annotations.TOKEN);
+         annotation.setId(token.id());
          int start = (token.beginPosition());
          int end = (token.endPosition());
 //         String original = text.substring(start, end);
