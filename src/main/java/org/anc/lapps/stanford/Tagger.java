@@ -39,7 +39,7 @@ public class Tagger extends AbstractStanfordService
    @Override
    public long[] produces()
    {
-      return new long[]{Types.STANFORD, Types.TOKEN, Types.POS};
+      return new long[]{Types.JSON, Types.TOKEN, Types.POS};
    }
 
    @Override
