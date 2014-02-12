@@ -33,33 +33,7 @@ public class SATagger implements WebService
    public SATagger() throws LappsException
    {
       logger.info("Creating the MaxentTagger");
-      File tempFile = null;
-      try
-      {
-         tempFile = File.createTempFile("stanford-maxent", ".model");
-      }
-      catch (IOException e)
-      {
-         throw new LappsException("Unable to create temp file.", e);
-      }
-
-      try
-      {
-         String model = ResourceLoader.loadString("models/english-bidirectional-distsim.tagger\"");
-         FileWriter writer = new FileWriter(tempFile);
-         new PrintWriter(writer).println(model);
-         writer.close();
-      }
-      catch (IOException e)
-      {
-         throw new LappsException("Unable to create the MaxentTagger.", e);
-      }
-      tagger = new MaxentTagger(tempFile.getPath());
-      if (!tempFile.delete())
-      {
-         logger.warn("Unable to delete temp file: {}", tempFile.getPath());
-         tempFile.deleteOnExit();
-      }
+      tagger = new MaxentTagger("/usr/share/lapps/opennlp/models/english-bidirectional-distsim.tagger");
    }
    
    @Override

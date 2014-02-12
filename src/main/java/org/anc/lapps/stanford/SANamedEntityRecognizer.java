@@ -26,7 +26,6 @@ public class SANamedEntityRecognizer implements WebService
 
    public SANamedEntityRecognizer()
    {
-      // TODO Auto-generated constructor stub
       logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
    }   
    
@@ -43,8 +42,9 @@ public class SANamedEntityRecognizer implements WebService
       {
          return DataFactory.error("Unable to initialize a list of Stanford CoreLabels.");
       }
-      
-      String classifierPath = "src/main/resources/classifiers/english.conll.4class.distsim.crf.ser.gz";
+
+      // TODO This path should not be hardcoded.
+      String classifierPath = "/usr/share/lapps/opennlp/classifiers/english.conll.4class.distsim.crf.ser.gz";
       AbstractSequenceClassifier classifier;
       try
       {
