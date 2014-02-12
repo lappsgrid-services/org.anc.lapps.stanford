@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@Ignore
 public class StanfordParserServiceTest
 {
    private static final long OK = Types.OK;

@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Keith Suderman
  */
-
+@Ignore
 public class NERTest
 {
    private static String text;

@@ -48,7 +48,9 @@ public class SATokenizer implements WebService
       }
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
-      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Standalone PTBTokenizer");
+      //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Standalone PTBTokenizer");
+      String name = this.getClass().getName() + ":" + Version.getVersion();
+      step.getMetadata().put(Metadata.PRODUCED_BY, name);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       
