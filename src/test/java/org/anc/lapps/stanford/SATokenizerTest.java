@@ -8,12 +8,14 @@ import org.anc.lapps.serialization.Container;
 import org.anc.resource.ResourceLoader;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
+//@Ignore
 public class SATokenizerTest
 {
    private WebService service;

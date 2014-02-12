@@ -1,6 +1,7 @@
 package org.anc.lapps.stanford;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.Data;
+import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
@@ -26,9 +28,12 @@ public class SATagger implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
 
-   public SATagger()
+   private MaxentTagger tagger;
+
+   public SATagger() throws LappsException
    {
-      logger.info("Stanford stand-alone tagger created.");
+      logger.info("Creating the MaxentTagger");
+      tagger = new MaxentTagger("/usr/share/lapps/opennlp/models/english-bidirectional-distsim.tagger");
    }
    
    @Override
@@ -78,19 +83,22 @@ public class SATagger implements WebService
          labels.add(new LappsCoreLabel(a));
       }
       
-      MaxentTagger tagger;
-      try
-      {
-         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
-      }
-      catch (OutOfMemoryError e)
-      {
-         return DataFactory.error("Ran out of memory training MaxentTagger.");
-      }
+//      MaxentTagger tagger;
+//      try
+//      {
+//         new MaxentTagger(`)
+//         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
+//      }
+//      catch (OutOfMemoryError e)
+//      {
+//         return DataFactory.error("Ran out of memory training MaxentTagger.");
+//      }
       tagger.tagCoreLabels(labels);
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
+//      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
+      String name = this.getClass().getName() + ":" + Version.getVersion();
+      step.getMetadata().put(Metadata.PRODUCED_BY, name);
       step.getMetadata().put("contains", "POS");
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
@@ -136,7 +144,7 @@ public class SATagger implements WebService
       return DataFactory.error("Unsupported operation.");
    }
 
-   public static void main(String[] args) throws IOException
+   public static void main(String[] args) throws IOException, LappsException
    {
       WebService tokenizer = new SATokenizer();
       String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
