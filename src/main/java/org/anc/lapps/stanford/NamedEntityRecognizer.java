@@ -64,7 +64,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
          List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
          ProcessingStep step = new ProcessingStep();
-         step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford NER");
+         String name = this.getClass().getName() + ":" + Version.getVersion();
+         step.getMetadata().put(Metadata.PRODUCED_BY, name);
          Converter.addSentences(step, sentences);
          Converter.addTokens(step, document.get(CoreAnnotations.TokensAnnotation.class));
          container.getSteps().add(step);

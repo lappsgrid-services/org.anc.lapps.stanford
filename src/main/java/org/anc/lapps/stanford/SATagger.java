@@ -90,7 +90,9 @@ public class SATagger implements WebService
       tagger.tagCoreLabels(labels);
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
+//      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
+      String name = this.getClass().getName() + ":" + Version.getVersion();
+      step.getMetadata().put(Metadata.PRODUCED_BY, name);
       step.getMetadata().put("contains", "POS");
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());

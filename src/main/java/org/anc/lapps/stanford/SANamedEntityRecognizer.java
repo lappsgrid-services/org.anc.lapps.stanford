@@ -71,7 +71,8 @@ public class SANamedEntityRecognizer implements WebService
       }
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone CRFClassifier");
+      String name = this.getClass().getName() + ":" + Version.getVersion();
+      step.getMetadata().put(Metadata.PRODUCED_BY, name);
       step.getMetadata().put("contains", Annotations.NE);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());

@@ -11,6 +11,7 @@ import org.anc.util.IDGenerator;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,9 @@ public class Tokenizer extends AbstractStanfordService
             return DataFactory.error("Stanford tokenizer returned null.");
          }
          ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
-         step.getMetadata().put("produced by", "Stanford Tokenizer");
+         //step.getMetadata().put("produced by", "Stanford Tokenizer");
+         String name = this.getClass().getName() + ":" + Version.getVersion();
+         step.getMetadata().put(Metadata.PRODUCED_BY, name);
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
 //         logger.info("Stanford tokenizer complete.");
