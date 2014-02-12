@@ -9,15 +9,17 @@ import org.anc.resource.ResourceLoader;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.lappsgrid.api.Data;
+import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
+@Ignore
 public class SANamedEntityRecognizerTest
 {
 
    @Test
-   public void testSANamedEntityRecognizer() throws IOException
+   public void testSANamedEntityRecognizer() throws IOException, LappsException
    {
       String text = ResourceLoader.loadString("Bartok.txt");
       

@@ -6,21 +6,20 @@ import java.io.IOException;
 
 import org.anc.lapps.serialization.Container;
 import org.anc.resource.ResourceLoader;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.lappsgrid.api.Data;
+import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
+@Ignore
 public class SATaggerTest
 {
    WebService service;
    
    @Before
-   public void setup()
+   public void setup() throws LappsException
    {
       this.service = new SATagger();
    }

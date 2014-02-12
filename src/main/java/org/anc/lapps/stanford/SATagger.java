@@ -1,6 +1,7 @@
 package org.anc.lapps.stanford;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.Data;
+import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
@@ -26,9 +28,38 @@ public class SATagger implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
 
-   public SATagger()
+   private MaxentTagger tagger;
+
+   public SATagger() throws LappsException
    {
-      logger.info("Stanford stand-alone tagger created.");
+      logger.info("Creating the MaxentTagger");
+      File tempFile = null;
+      try
+      {
+         tempFile = File.createTempFile("stanford-maxent", ".model");
+      }
+      catch (IOException e)
+      {
+         throw new LappsException("Unable to create temp file.", e);
+      }
+
+      try
+      {
+         String model = ResourceLoader.loadString("models/english-bidirectional-distsim.tagger\"");
+         FileWriter writer = new FileWriter(tempFile);
+         new PrintWriter(writer).println(model);
+         writer.close();
+      }
+      catch (IOException e)
+      {
+         throw new LappsException("Unable to create the MaxentTagger.", e);
+      }
+      tagger = new MaxentTagger(tempFile.getPath());
+      if (!tempFile.delete())
+      {
+         logger.warn("Unable to delete temp file: {}", tempFile.getPath());
+         tempFile.deleteOnExit();
+      }
    }
    
    @Override
@@ -78,15 +109,16 @@ public class SATagger implements WebService
          labels.add(new LappsCoreLabel(a));
       }
       
-      MaxentTagger tagger;
-      try
-      {
-         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
-      }
-      catch (OutOfMemoryError e)
-      {
-         return DataFactory.error("Ran out of memory training MaxentTagger.");
-      }
+//      MaxentTagger tagger;
+//      try
+//      {
+//         new MaxentTagger(`)
+//         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
+//      }
+//      catch (OutOfMemoryError e)
+//      {
+//         return DataFactory.error("Ran out of memory training MaxentTagger.");
+//      }
       tagger.tagCoreLabels(labels);
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
@@ -138,7 +170,7 @@ public class SATagger implements WebService
       return DataFactory.error("Unsupported operation.");
    }
 
-   public static void main(String[] args) throws IOException
+   public static void main(String[] args) throws IOException, LappsException
    {
       WebService tokenizer = new SATokenizer();
       String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
