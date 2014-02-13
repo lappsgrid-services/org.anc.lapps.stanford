@@ -1,5 +1,7 @@
 package org.anc.lapps.stanford;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import org.anc.lapps.serialization.Container;
@@ -24,14 +26,50 @@ public class SANamedEntityRecognizer implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SANamedEntityRecognizer.class);
 
+   // TODO This path should not be hardcoded.
+   private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
+
+   protected AbstractSequenceClassifier classifier;
+   protected Throwable savedException = null;
+   protected String exceptionMessage = null;
+
    public SANamedEntityRecognizer()
    {
-      logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
-   }   
+      try
+      {
+         classifier = CRFClassifier.getClassifier(classifierPath);
+         logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
+      }
+      catch (OutOfMemoryError e)
+      {
+         logger.error("Ran out of memory creating the CRFClassifier.", e);
+         savedException = e;
+      }
+      catch (Exception e)
+      {
+         logger.error("Unable to create the CRFClassifier.", e);
+         savedException = e;
+      }
+   }
    
    @Override
    public Data execute(Data input)
    {
+      // A savedException indicates there was a problem creating the CRFClassifier
+      // object.
+      if (savedException != null)
+      {
+         if (exceptionMessage == null)
+         {
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            writer.println(savedException.getMessage());
+            savedException.printStackTrace(writer);
+            exceptionMessage = stringWriter.toString();
+         }
+         return DataFactory.error(exceptionMessage);
+      }
+
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
       Container container = new Container(input.getPayload());
       Data data = null;
@@ -43,22 +81,6 @@ public class SANamedEntityRecognizer implements WebService
          return DataFactory.error("Unable to initialize a list of Stanford CoreLabels.");
       }
 
-      // TODO This path should not be hardcoded.
-      String classifierPath = "/usr/share/lapps/opennlp/classifiers/english.conll.4class.distsim.crf.ser.gz";
-      AbstractSequenceClassifier classifier;
-      try
-      {
-         classifier = CRFClassifier.getClassifier(classifierPath);
-      }
-      catch (OutOfMemoryError e)
-      {
-         return DataFactory.error("Ran out of memory training CRFClassifier.");
-      }
-      catch (Exception e)
-      {
-         return DataFactory.error("Unable to load the CRFClassifier classifier file.");
-      }
-      
       List<CoreLabel> classifiedLabels = classifier.classify(labels);
       String invalidNer = "O";
       for (CoreLabel label : classifiedLabels)
