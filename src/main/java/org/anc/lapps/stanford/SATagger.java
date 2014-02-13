@@ -28,12 +28,15 @@ public class SATagger implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
 
+   // TODO The path should NOT be hard coded.
+   private static final String MODEL_PATH = Constants.PATH.TAGGER_MODEL_PATH;
+
    private MaxentTagger tagger;
 
    public SATagger() throws LappsException
    {
       logger.info("Creating the MaxentTagger");
-      tagger = new MaxentTagger("/usr/share/lapps/opennlp/models/english-bidirectional-distsim.tagger");
+      tagger = new MaxentTagger();
    }
    
    @Override
