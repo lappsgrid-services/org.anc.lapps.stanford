@@ -1,9 +1,6 @@
 package org.anc.lapps.stanford;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,15 +25,12 @@ public class SATagger implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
 
-   // TODO The path should NOT be hard coded.
-   private static final String MODEL_PATH = Constants.PATH.TAGGER_MODEL_PATH;
-
    private MaxentTagger tagger;
 
-   public SATagger() throws LappsException
+   public SATagger() //throws LappsException
    {
       logger.info("Creating the MaxentTagger");
-      tagger = new MaxentTagger();
+      tagger = new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH);
    }
    
    @Override
@@ -85,18 +79,19 @@ public class SATagger implements WebService
       {
          labels.add(new LappsCoreLabel(a));
       }
-      
-//      MaxentTagger tagger;
-//      try
-//      {
-//         new MaxentTagger(`)
-//         tagger = new MaxentTagger("src/main/resources/models/english-bidirectional-distsim.tagger");
-//      }
-//      catch (OutOfMemoryError e)
-//      {
-//         return DataFactory.error("Ran out of memory training MaxentTagger.");
-//      }
-      tagger.tagCoreLabels(labels);
+
+      try
+      {
+         tagger.tagCoreLabels(labels);
+      }
+      catch (Exception e)
+      {
+         StringWriter stringWriter = new StringWriter();
+         PrintWriter writer = new PrintWriter(stringWriter);
+         writer.println("Unable to run the stanford tagger.");
+         e.printStackTrace(writer);
+         return DataFactory.error(stringWriter.toString());
+      }
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
 //      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
