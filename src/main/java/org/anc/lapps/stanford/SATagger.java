@@ -49,30 +49,30 @@ public class SATagger implements WebService
       }
       Data data = null;
       List<ProcessingStep> steps = container.getSteps();
-      ProcessingStep tokenStep = null;
-      for (ProcessingStep step : steps)
-      {
-//         boolean hasTokens = false;
+      ProcessingStep tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
+//      for (ProcessingStep step : steps)
+//      {
+////         boolean hasTokens = false;
+////
+////         // Check if this processing step contains tokens
+////         String contains = (String) step.getMetadata().get(Metadata.CONTAINS);
+////         if (contains != null)
+////         {
+////            hasTokens = contains.contains(Annotations.TOKEN);
+////         }
+////         else
+////         {
+////            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
+////            hasTokens = producedBy.contains("token") || producedBy.contains("Token");
+////         }
 //
-//         // Check if this processing step contains tokens
-//         String contains = (String) step.getMetadata().get(Metadata.CONTAINS);
-//         if (contains != null)
+//         boolean hasTokens = StanfordUtils.contains(step, Annotations.TOKEN);
+//         if (hasTokens)
 //         {
-//            hasTokens = contains.contains(Annotations.TOKEN);
+//            tokenStep = step;
+//            break;
 //         }
-//         else
-//         {
-//            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-//            hasTokens = producedBy.contains("token") || producedBy.contains("Token");
-//         }
-
-         boolean hasTokens = StanfordUtils.contains(step, Annotations.TOKEN);
-         if (hasTokens)
-         {
-            tokenStep = step;
-            break;
-         }
-      }
+//      }
       
       if (tokenStep == null)
       {
