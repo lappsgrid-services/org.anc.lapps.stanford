@@ -3,6 +3,7 @@ package org.anc.lapps.stanford;
 import java.util.Map;
 
 import org.anc.lapps.serialization.Annotation;
+import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 
 import edu.stanford.nlp.ling.CoreLabel;
@@ -24,9 +25,9 @@ public class LappsCoreLabel extends CoreLabel
       {
          this.setTag((String) features.get(Features.PART_OF_SPEECH));
       }
-      if (features.get("ner") != null)
+      if (features.get(Annotations.NE) != null)
       {
-         this.setNER((String) features.get("ner"));
+         this.setNER((String) features.get(Annotations.NE));
       }
    }
 
