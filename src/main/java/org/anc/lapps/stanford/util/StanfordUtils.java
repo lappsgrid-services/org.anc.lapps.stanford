@@ -11,6 +11,7 @@ import org.anc.lapps.stanford.LappsCoreLabel;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,29 +55,29 @@ public class StanfordUtils
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)
    {
       List<ProcessingStep> steps = container.getSteps();
-      ProcessingStep taggedStep = null;
-      for (int i = steps.size() - 1; i >= 0; i--)
-      {
-         ProcessingStep step = container.getSteps().get(i);
-         boolean hasTags = false;
-         String contains = (String) step.getMetadata().get("contains");
-         if (contains != null)
-         {
-            hasTags = contains.contains("POS");
-         }
-         else
-         {
-            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-            hasTags = producedBy.toLowerCase().contains("tagger");
-         }
-         
-         if (hasTags)
-         {
-            taggedStep = step;
-            break;
-         }
-      }
-      
+//      ProcessingStep taggedStep = null;
+//      for (int i = steps.size() - 1; i >= 0; i--)
+//      {
+//         ProcessingStep step = container.getSteps().get(i);
+//         boolean hasTags = false;
+//         String contains = (String) step.getMetadata().get("contains");
+//         if (contains != null)
+//         {
+//            hasTags = contains.contains("POS");
+//         }
+//         else
+//         {
+//            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
+//            hasTags = producedBy.toLowerCase().contains("tagger");
+//         }
+//
+//         if (hasTags)
+//         {
+//            taggedStep = step;
+//            break;
+//         }
+//      }
+      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.PART_OF_SPEECH);
       if (taggedStep == null)
       {
          return null; 
