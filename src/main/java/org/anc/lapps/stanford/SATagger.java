@@ -3,17 +3,21 @@ package org.anc.lapps.stanford;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
+import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,31 +49,34 @@ public class SATagger implements WebService
       }
       Data data = null;
       List<ProcessingStep> steps = container.getSteps();
-      ProcessingStep tokenStep = null;
-      for (ProcessingStep step : steps)
-      {
-         boolean hasTokens = false;
-         
-         // Check if this processing step contains tokens
-         String contains = (String) step.getMetadata().get("contains");
-         if (contains != null)
-         {
-            hasTokens = contains.contains("tokens");
-         }
-         else
-         {
-            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-            hasTokens = producedBy.contains("token") || producedBy.contains("Token");
-         }
-         
-         if (hasTokens)
-         {
-            tokenStep = step;
-         }
-      }
+      ProcessingStep tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
+//      for (ProcessingStep step : steps)
+//      {
+////         boolean hasTokens = false;
+////
+////         // Check if this processing step contains tokens
+////         String contains = (String) step.getMetadata().get(Metadata.CONTAINS);
+////         if (contains != null)
+////         {
+////            hasTokens = contains.contains(Annotations.TOKEN);
+////         }
+////         else
+////         {
+////            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
+////            hasTokens = producedBy.contains("token") || producedBy.contains("Token");
+////         }
+//
+//         boolean hasTokens = StanfordUtils.contains(step, Annotations.TOKEN);
+//         if (hasTokens)
+//         {
+//            tokenStep = step;
+//            break;
+//         }
+//      }
       
       if (tokenStep == null)
       {
+         logger.warn("No tokens were found in any processing step");
          return DataFactory.error("Unable to process input; no tokenized ProessingStep found.");
       }
       
@@ -94,16 +101,34 @@ public class SATagger implements WebService
       }
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-//      step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Stand-Alone MaxentTagger");
       String name = this.getClass().getName() + ":" + Version.getVersion();
-      step.getMetadata().put(Metadata.PRODUCED_BY, name);
-      step.getMetadata().put("contains", "POS");
+      Map<String,String> metadata = step.getMetadata();
+      metadata.put(Metadata.PRODUCED_BY, name);
+      metadata.put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       
       return data;
    }
    
+   @Override
+   public long[] requires()
+   {
+      return new long[]{Types.TOKEN};
+   }
+
+   @Override
+   public long[] produces()
+   {
+      return new long[]{Types.STANFORD, Types.TOKEN, Types.POS};
+   }
+
+   @Override
+   public Data configure(Data arg0)
+   {
+      return DataFactory.error("Unsupported operation.");
+   }
+
    protected Container createContainer(Data input)
    {
       Container container = null;
@@ -122,24 +147,6 @@ public class SATagger implements WebService
          container = new Container(input.getPayload());
       }
       return container;
-   }
-
-   @Override
-   public long[] requires()
-   {
-      return new long[]{Types.TOKEN};
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[]{Types.STANFORD, Types.TOKEN, Types.POS};
-   }
-
-   @Override
-   public Data configure(Data arg0)
-   {
-      return DataFactory.error("Unsupported operation.");
    }
 
    public static void main(String[] args) throws IOException, LappsException

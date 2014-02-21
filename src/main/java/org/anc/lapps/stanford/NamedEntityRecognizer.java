@@ -12,6 +12,7 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          ProcessingStep step = new ProcessingStep();
          String name = this.getClass().getName() + ":" + Version.getVersion();
          step.getMetadata().put(Metadata.PRODUCED_BY, name);
+         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
          Converter.addSentences(step, sentences);
          Converter.addTokens(step, document.get(CoreAnnotations.TokensAnnotation.class));
          container.getSteps().add(step);
