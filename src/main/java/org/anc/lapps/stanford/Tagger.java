@@ -11,6 +11,7 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public class Tagger extends AbstractStanfordService
          //step.getMetadata().put("produced by", "Stanford Tagger");
          String name = this.getClass().getName() + ":" + Version.getVersion();
          step.getMetadata().put(Metadata.PRODUCED_BY, name);
+         step.getMetadata().put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
          container.getSteps().add(step);
 
          logger.info("Stanford tagger complete.");

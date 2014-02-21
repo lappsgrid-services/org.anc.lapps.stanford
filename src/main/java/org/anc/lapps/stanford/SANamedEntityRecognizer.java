@@ -3,6 +3,7 @@ package org.anc.lapps.stanford;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
@@ -26,7 +27,6 @@ public class SANamedEntityRecognizer implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(SANamedEntityRecognizer.class);
 
-   // TODO This path should not be hardcoded.
    private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
 
    protected AbstractSequenceClassifier classifier;
@@ -94,8 +94,9 @@ public class SANamedEntityRecognizer implements WebService
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
       String name = this.getClass().getName() + ":" + Version.getVersion();
-      step.getMetadata().put(Metadata.PRODUCED_BY, name);
-      step.getMetadata().put("contains", Annotations.NE);
+      Map<String,String> metadata = step.getMetadata();
+      metadata.put(Metadata.PRODUCED_BY, name);
+      metadata.put(Metadata.CONTAINS, Annotations.NE);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       

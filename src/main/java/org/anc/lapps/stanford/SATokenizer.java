@@ -3,6 +3,7 @@ package org.anc.lapps.stanford;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
@@ -11,6 +12,7 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,9 @@ public class SATokenizer implements WebService
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
       //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Standalone PTBTokenizer");
       String name = this.getClass().getName() + ":" + Version.getVersion();
-      step.getMetadata().put(Metadata.PRODUCED_BY, name);
+      Map<String,String> metadata = step.getMetadata();
+      metadata.put(Metadata.PRODUCED_BY, name);
+      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       

@@ -10,11 +10,13 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Keith Suderman
@@ -45,20 +47,12 @@ public class SentenceSplitter extends AbstractStanfordService
          ProcessingStep step = Converter.addSentences(new ProcessingStep(), sentences);
          //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford splitter");
          String name = this.getClass().getName() + ":" + Version.getVersion();
-         step.getMetadata().put(Metadata.PRODUCED_BY, name);
+         Map<String,String> metadata = step.getMetadata();
+         metadata.put(Metadata.PRODUCED_BY, name);
+         metadata.put(Metadata.CONTAINS, Annotations.SENTENCE);
+
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
-//         List<String> list = new ArrayList<String>();
-//         if (sentences == null)
-//         {
-//            return DataFactory.error("Stanford splitter returned null.");
-//         }
-//         for (CoreMap sentence : sentences)
-//         {
-//            list.add(sentence.toString());
-//         }
-//         data = DataFactory.stringList(list);
-//         data.setDiscriminator(Types.STANFORD);
       }
       catch (InterruptedException e)
       {
