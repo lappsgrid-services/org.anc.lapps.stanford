@@ -47,7 +47,9 @@ public class SATokenizer implements WebService
       }
       else {
          String typeName = DiscriminatorRegistry.get(type);
-         return DataFactory.error("Unknown discriminator type. Expected text or json. Found " + typeName);
+         String message = "Unknown discriminator type. Expected text or json. Found " + typeName;
+         logger.warn(message);
+         return DataFactory.error(message);
       }
 
       Data data = null;
@@ -100,13 +102,13 @@ public class SATokenizer implements WebService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.STANFORD, Types.SENTENCE};
+      return new long[] { Types.TEXT };
    }
 
    @Override
    public long[] produces()
    {
-      return new long[]{Types.STANFORD, Types.SENTENCE, Types.TOKEN};
+      return new long[] { Types.JSON, Types.TOKEN };
    }
 
    @Override

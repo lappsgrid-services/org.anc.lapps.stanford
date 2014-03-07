@@ -9,6 +9,7 @@ import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
@@ -35,7 +36,25 @@ public class SentenceSplitter extends AbstractStanfordService
    public Data execute(Data input)
    {
       logger.info("Executing Stanford sentence splitter.");
-      Container container = createContainer(input);
+      Container container;
+      long type = input.getDiscriminator();
+      if (type == Types.TEXT)
+      {
+         container = new Container();
+         container.setText(input.getPayload());
+      }
+      else if (type == Types.JSON)
+      {
+         container = new Container(input.getPayload());
+      }
+      else
+      {
+         String name = DiscriminatorRegistry.get(type);
+         String message = "Invalid input type. Expected TEXT or JSON but found " + name;
+         logger.warn(message);
+         return DataFactory.error(message);
+      }
+
       Annotation document = new Annotation(container.getText());
       Data data = null;
       StanfordCoreNLP service = null;
@@ -74,12 +93,12 @@ public class SentenceSplitter extends AbstractStanfordService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.TEXT};
+      return new long[] { Types.TEXT };
    }
 
    @Override
    public long[] produces()
    {
-      return new long[]{Types.JSON, Types.SENTENCE, Types.TOKEN};
+      return new long[] { Types.JSON, Types.SENTENCE, Types.TOKEN };
    }
 }

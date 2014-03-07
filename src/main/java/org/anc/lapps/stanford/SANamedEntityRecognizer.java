@@ -12,6 +12,7 @@ import org.anc.lapps.stanford.util.StanfordUtils;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
@@ -70,6 +71,19 @@ public class SANamedEntityRecognizer implements WebService
          return DataFactory.error(exceptionMessage);
       }
 
+      long type = input.getDiscriminator();
+      if (type == Types.ERROR)
+      {
+         return input;
+      }
+      if (type != Types.JSON)
+      {
+         String name = DiscriminatorRegistry.get(type);
+         String message = "Invalid input type. Expected JSON but found " + name;
+         logger.warn(message);
+         return DataFactory.error(message);
+      }
+
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
       Container container = new Container(input.getPayload());
       Data data = null;
@@ -78,7 +92,9 @@ public class SANamedEntityRecognizer implements WebService
       
       if (labels == null)
       {
-         return DataFactory.error("Unable to initialize a list of Stanford CoreLabels.");
+         String message = "Unable to initialize a list of Stanford CoreLabels.";
+         logger.warn(message);
+         return DataFactory.error(message);
       }
 
       List<CoreLabel> classifiedLabels = classifier.classify(labels);
@@ -106,13 +122,13 @@ public class SANamedEntityRecognizer implements WebService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.POS};
+      return new long[] { Types.JSON, Types.TOKEN, Types.POS };
    }
 
    @Override
    public long[] produces()
    {
-      return new long[]{Types.STANFORD, Types.NAMED_ENTITES};
+      return new long[]{Types.JSON, Types.TOKEN, Types.POS, Types.NAMED_ENTITES};
    }
 
    @Override
