@@ -11,6 +11,7 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Metadata;
@@ -29,11 +30,28 @@ public class SATokenizer implements WebService
    public Data execute(Data input)
    {
       logger.info("Executing Stanford stand-alone tokenizer");
-      Container container = createContainer(input);
-      if (container == null)
+      Container container = null;
+      long type = input.getDiscriminator();
+      if (type == Types.ERROR)
       {
          return input;
       }
+      else if (type == Types.TEXT)
+      {
+         container = new Container();
+         container.setText(input.getPayload());
+      }
+      else if (type == Types.JSON)
+      {
+         container = new Container(input.getPayload());
+      }
+      else {
+         String typeName = DiscriminatorRegistry.get(type);
+         String message = "Unknown discriminator type. Expected text or json. Found " + typeName;
+         logger.warn(message);
+         return DataFactory.error(message);
+      }
+
       Data data = null;
       String text = container.getText();
       
@@ -84,13 +102,13 @@ public class SATokenizer implements WebService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.STANFORD, Types.SENTENCE};
+      return new long[] { Types.TEXT };
    }
 
    @Override
    public long[] produces()
    {
-      return new long[]{Types.STANFORD, Types.SENTENCE, Types.TOKEN};
+      return new long[] { Types.JSON, Types.TOKEN };
    }
 
    @Override

@@ -15,6 +15,7 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
@@ -41,43 +42,34 @@ public class SATagger implements WebService
    public Data execute(Data input)
    {
       logger.info("Executing Stanford stand-alone Tagger.");
-      logger.info("Tagger is using model english-bidirectional-distsim.");
-      Container container = createContainer(input);
-      if (container == null)
+//      logger.info("Tagger is using model english-bidirectional-distsim.");
+//      Container container = createContainer(input);
+//      if (container == null)
+//      {
+//         return input;
+//      }
+      long type = input.getDiscriminator();
+      if (type == Types.ERROR)
       {
          return input;
       }
+      if (type != Types.JSON)
+      {
+         String name = DiscriminatorRegistry.get(type);
+         String message = "Invalid input type. Expected JSON but found " + name;
+         logger.warn(message);
+         return DataFactory.error(message);
+      }
+
+      Container container = new Container(input.getPayload());
       Data data = null;
       List<ProcessingStep> steps = container.getSteps();
       ProcessingStep tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
-//      for (ProcessingStep step : steps)
-//      {
-////         boolean hasTokens = false;
-////
-////         // Check if this processing step contains tokens
-////         String contains = (String) step.getMetadata().get(Metadata.CONTAINS);
-////         if (contains != null)
-////         {
-////            hasTokens = contains.contains(Annotations.TOKEN);
-////         }
-////         else
-////         {
-////            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-////            hasTokens = producedBy.contains("token") || producedBy.contains("Token");
-////         }
-//
-//         boolean hasTokens = StanfordUtils.contains(step, Annotations.TOKEN);
-//         if (hasTokens)
-//         {
-//            tokenStep = step;
-//            break;
-//         }
-//      }
-      
+
       if (tokenStep == null)
       {
          logger.warn("No tokens were found in any processing step");
-         return DataFactory.error("Unable to process input; no tokenized ProessingStep found.");
+         return DataFactory.error("Unable to process input; no tokens found.");
       }
       
       List<Annotation> annotations = tokenStep.getAnnotations();
@@ -114,13 +106,13 @@ public class SATagger implements WebService
    @Override
    public long[] requires()
    {
-      return new long[]{Types.TOKEN};
+      return new long[]{ Types.JSON, Types.TOKEN };
    }
 
    @Override
    public long[] produces()
    {
-      return new long[]{Types.STANFORD, Types.TOKEN, Types.POS};
+      return new long[]{Types.JSON, Types.TOKEN, Types.POS};
    }
 
    @Override
