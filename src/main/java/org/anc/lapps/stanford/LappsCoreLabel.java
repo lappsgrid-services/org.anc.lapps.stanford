@@ -21,9 +21,9 @@ public class LappsCoreLabel extends CoreLabel
       this.setEndPosition((int) a.getEnd());
       
       Map features = a.getFeatures();
-      if (features.get(Features.PART_OF_SPEECH) != null)
+      if (features.get(Features.Token.PART_OF_SPEECH) != null)
       {
-         this.setTag((String) features.get(Features.PART_OF_SPEECH));
+         this.setTag((String) features.get(Features.Token.PART_OF_SPEECH));
       }
       if (features.get(Annotations.NE) != null)
       {

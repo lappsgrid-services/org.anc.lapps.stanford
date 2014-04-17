@@ -22,10 +22,10 @@ import static org.junit.Assert.fail;
 @Ignore
 public class StanfordParserServiceTest
 {
-   private static final long OK = Types.OK;
-   private static final long ERROR = Types.ERROR;
-   private static final long PARAMETER = StanfordParserService.TEXT;
-   private static final long DOCUMENT = StanfordParserService.STANFORD;
+//   private static final long OK = Types.OK;
+//   private static final long ERROR = Types.ERROR;
+//   private static final long PARAMETER = StanfordParserService.TEXT;
+//   private static final long DOCUMENT = StanfordParserService.STANFORD;
 
    @Test
    public void testData() throws IOException
@@ -83,12 +83,12 @@ public class StanfordParserServiceTest
    protected Data test(String annotators) throws IOException
    {
       WebService service = new StanfordParserService();
-      Data parameter = new Data(PARAMETER, annotators);
+      Data parameter = new Data(Types.TEXT, annotators);
       Data result = service.configure(parameter);
-      assertTrue(result.getDiscriminator() == OK);
+      assertTrue(result.getDiscriminator() == Types.OK);
       System.out.println("Executing pipeline " + annotators);
       result = service.execute(getData());
-      assertTrue(result.getDiscriminator() == DOCUMENT);
+      assertTrue(result.getDiscriminator() == Types.DOCUMENT);
       return result;
    }
 

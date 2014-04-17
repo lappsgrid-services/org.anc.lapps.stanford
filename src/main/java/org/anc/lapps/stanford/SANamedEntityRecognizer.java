@@ -4,6 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
@@ -26,19 +29,31 @@ import edu.stanford.nlp.ling.CoreLabel;
 
 public class SANamedEntityRecognizer implements WebService
 {
+   public static final int POOL_SIZE = 2;
+
+   /* How long to wait for a processing thread to become available to service an incoming request. */
+   public static final long DELAY = 5;
+   public static final TimeUnit UNIT = TimeUnit.SECONDS;
+
    private static final Logger logger = LoggerFactory.getLogger(SANamedEntityRecognizer.class);
 
    private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
 
-   protected AbstractSequenceClassifier classifier;
+   //protected AbstractSequenceClassifier classifier;
+   protected BlockingQueue<AbstractSequenceClassifier> pool;
    protected Throwable savedException = null;
    protected String exceptionMessage = null;
 
    public SANamedEntityRecognizer()
    {
+      pool = new ArrayBlockingQueue<AbstractSequenceClassifier>(POOL_SIZE);
       try
       {
-         classifier = CRFClassifier.getClassifier(classifierPath);
+//         classifier = CRFClassifier.getClassifier(classifierPath);
+         for (int i=0; i < POOL_SIZE; ++i)
+         {
+            pool.add(CRFClassifier.getClassifier(classifierPath));
+         }
          logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
       }
       catch (OutOfMemoryError e)
@@ -97,23 +112,51 @@ public class SANamedEntityRecognizer implements WebService
          return DataFactory.error(message);
       }
 
-      List<CoreLabel> classifiedLabels = classifier.classify(labels);
-      String invalidNer = "O";
-      for (CoreLabel label : classifiedLabels)
+      AbstractSequenceClassifier classifier = null;
+      List<CoreLabel> classifiedLabels = null;
+      try
       {
-         String ner = label.get(AnswerAnnotation.class);
-         if (!ner.equals(invalidNer))
+//         classifier = pool.take();
+         classifier = pool.poll(DELAY, UNIT);
+         if (classifier == null)
          {
-            label.setNER(ner);
+            logger.warn(Messages.BUSY);
+            return DataFactory.error(Messages.BUSY);
+         }
+
+         classifiedLabels = classifier.classify(labels);
+      }
+      catch (InterruptedException e)
+      {
+         //e.printStackTrace();
+      }
+      finally
+      {
+         if (classifier != null)
+         {
+            pool.add(classifier);
          }
       }
-      
-      ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-      String name = this.getClass().getName() + ":" + Version.getVersion();
-      Map<String,String> metadata = step.getMetadata();
-      metadata.put(Metadata.PRODUCED_BY, name);
-      metadata.put(Metadata.CONTAINS, Annotations.NE);
-      container.getSteps().add(step);
+      if (classifiedLabels != null)
+      {
+         String invalidNer = "O";
+         for (CoreLabel label : classifiedLabels)
+         {
+            String ner = label.get(AnswerAnnotation.class);
+            if (!ner.equals(invalidNer))
+            {
+               label.setNER(ner);
+            }
+         }
+
+         ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
+         String producer = this.getClass().getName() + ":" + Version.getVersion();
+         step.addContains(Annotations.NE, producer, "ner:stanford");
+//         Map<String, String> metadata = step.getMetadata();
+//         metadata.put(Metadata.PRODUCED_BY, name);
+//         metadata.put(Metadata.CONTAINS, Annotations.NE);
+         container.getSteps().add(step);
+      }
       data = DataFactory.json(container.toJson());
       
       return data;
@@ -128,7 +171,7 @@ public class SANamedEntityRecognizer implements WebService
    @Override
    public long[] produces()
    {
-      return new long[]{Types.JSON, Types.TOKEN, Types.POS, Types.NAMED_ENTITES};
+      return new long[]{Types.JSON, Types.NAMED_ENTITES};
    }
 
    @Override

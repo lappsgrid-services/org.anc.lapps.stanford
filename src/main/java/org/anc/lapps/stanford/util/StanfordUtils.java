@@ -77,7 +77,7 @@ public class StanfordUtils
 //            break;
 //         }
 //      }
-      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.PART_OF_SPEECH);
+      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
       if (taggedStep == null)
       {
          return null; 

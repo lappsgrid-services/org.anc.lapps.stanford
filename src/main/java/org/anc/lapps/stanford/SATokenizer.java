@@ -4,7 +4,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
@@ -56,7 +59,7 @@ public class SATokenizer implements WebService
       String text = container.getText();
       
       List<CoreLabel> tokens = new ArrayList<CoreLabel>();
-      PTBTokenizer ptbt = new PTBTokenizer(new StringReader(text), new CoreLabelTokenFactory(), "");
+      PTBTokenizer ptbt = new PTBTokenizer(new StringReader(text), new CoreLabelTokenFactory(), "ptb3Escaping=false");
       for (CoreLabel label; ptbt.hasNext(); )
       {
          label = (CoreLabel) ptbt.next();
@@ -68,11 +71,11 @@ public class SATokenizer implements WebService
       }
       
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
-      //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford Standalone PTBTokenizer");
-      String name = this.getClass().getName() + ":" + Version.getVersion();
-      Map<String,String> metadata = step.getMetadata();
-      metadata.put(Metadata.PRODUCED_BY, name);
-      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
+      String producer = this.getClass().getName() + ":" + Version.getVersion();
+      step.addContains(Annotations.TOKEN, producer, "stanford");
+//      Map<String,String> metadata = step.getMetadata();
+//      metadata.put(Metadata.PRODUCED_BY, name);
+//      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
       

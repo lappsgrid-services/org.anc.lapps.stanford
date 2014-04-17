@@ -2,6 +2,8 @@ package org.anc.lapps.stanford;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
@@ -11,81 +13,91 @@ import org.lappsgrid.discriminator.Types;
 
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StanfordParserService implements WebService
 {
-//   public static final long DOCUMENT = get("stanford");
-//   public static final long PARAMETER = get("input-parameter");
-//   public static final long SENTENCE = get("standford-sentence");
-//   public static final long TOKEN = get("standford-sentence");
-//   public static final long LEMMA = get("stanford-lemma");
-    public static final long ERROR = Types.ERROR;
-    public static final long OK = Types.OK;
-    public static final long TEXT = Types.TEXT;
-    public static final long STANFORD = Types.STANFORD;
-    public static final long SENTENCE = Types.SENTENCE;
-    public static final long TOKEN = Types.TOKEN;
-    public static final long POS = Types.POS;
+   private static final Logger logger = LoggerFactory.getLogger(StanfordParserService.class);
 
-    protected StanfordCoreNLP pipeline;
-    protected Properties properties;
+   protected static final int POOL_SIZE = 4;
+   protected static final long DELAY = 5;
+   protected static final TimeUnit UNIT = TimeUnit.SECONDS;
 
-    public StanfordParserService()
-    {
-        properties = new Properties();
-    }
+   //protected StanfordCoreNLP pipeline;
+   protected BlockingQueue<StanfordCoreNLP> pool;
+   protected Properties properties;
 
-    @Override
-    public long[] requires()
-    {
-        return new long[]{Types.TEXT};
-    }
+   public StanfordParserService()
+   {
+      logger.info("Initializing the Stanford Parser pool");
+      properties = new Properties();
+      for (int i = 0; i < POOL_SIZE; ++i)
+      {
+         pool.add(new StanfordCoreNLP(properties));
+      }
+   }
 
-    @Override
-    public long[] produces()
-    {
-        return new long[]{STANFORD};
-    }
+   @Override
+   public long[] requires()
+   {
+      return new long[] { Types.TEXT };
+   }
 
-    @Override
-    public Data execute(Data input)
-    {
-        if (input.getDiscriminator() != Types.TEXT)
-        {
-            String name = DiscriminatorRegistry.get(input.getDiscriminator());
-            String message = "Invalid input type. Found: \"" + name +
-                    "\" expected: \"text\"";
-            return DataFactory.error(message);
-        }
-        if (pipeline == null)
-        {
-            pipeline = new StanfordCoreNLP(properties);
-        }
-        Annotation document = new Annotation(input.getPayload());
-        pipeline.annotate(document);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(4096);
-        pipeline.prettyPrint(document, stream);
-        return new Data(STANFORD, stream.toByteArray());
-    }
+   @Override
+   public long[] produces()
+   {
+      return new long[] { Types.STANFORD };
+   }
 
-    @Override
-    public Data configure(Data config)
-    {
-        if (config.getDiscriminator() != TEXT)
-        {
-            String name = DiscriminatorRegistry.get(config.getDiscriminator());
-            return DataFactory.error("Invalid parameter type. Found: \"" + name +
-                    "\" expected: \"input-parameter\"");
+   @Override
+   public Data execute(Data input)
+   {
+      if (input.getDiscriminator() != Types.TEXT)
+      {
+         String name = DiscriminatorRegistry.get(input.getDiscriminator());
+         String message = "Invalid input type. Found: \"" + name +
+                 "\" expected: \"text\"";
+         return DataFactory.error(message);
+      }
+      StanfordCoreNLP pipeline = null;
+      try
+      {
+         pipeline = pool.poll(DELAY, UNIT);
+      }
+      catch (InterruptedException ignored)
+      {
+         //e.printStackTrace();
+      }
+      if (pipeline == null)
+      {
+         return DataFactory.error(Messages.BUSY);
+      }
+      Annotation document = new Annotation(input.getPayload());
+      pipeline.annotate(document);
+      ByteArrayOutputStream stream = new ByteArrayOutputStream(4096);
+      pipeline.prettyPrint(document, stream);
+      return new Data(Types.STANFORD, stream.toByteArray());
+   }
+
+   @Override
+   public Data configure(Data config)
+   {
+      if (config.getDiscriminator() != Types.TEXT)
+      {
+         String name = DiscriminatorRegistry.get(config.getDiscriminator());
+         return DataFactory.error("Invalid parameter type. Found: \"" + name +
+                 "\" expected: \"input-parameter\"");
 
 
-        }
+      }
 //      System.out.println("Setting annotators: " + config.getPayload());
-        properties.put("annotators", config.getPayload());
-        return DataFactory.ok();
-    }
+      properties.put("annotators", config.getPayload());
+      return DataFactory.ok();
+   }
 
-    private static long get(String name)
-    {
-        return DiscriminatorRegistry.get(name);
-    }
+   private static long get(String name)
+   {
+      return DiscriminatorRegistry.get(name);
+   }
 }

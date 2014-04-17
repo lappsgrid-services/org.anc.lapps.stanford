@@ -1,22 +1,21 @@
 package org.anc.lapps.stanford;
 
-import edu.stanford.nlp.ling.CoreAnnotations.*;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.vocabulary.Contents;
+import static org.lappsgrid.vocabulary.Contents.TagSets;
 import org.lappsgrid.vocabulary.Features;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,10 +67,11 @@ public class Tagger extends AbstractStanfordService
          }
          ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
          //step.getMetadata().put("produced by", "Stanford Tagger");
-         String name = this.getClass().getName() + ":" + Version.getVersion();
-         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-         step.getMetadata().put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
-         container.getSteps().add(step);
+         String producer = this.getClass().getName() + ":" + Version.getVersion();
+         step.addContains(Features.Token.PART_OF_SPEECH, producer, TagSets.PENN);
+//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
+//         step.getMetadata().put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
+                 container.getSteps().add(step);
 
          logger.info("Stanford tagger complete.");
          data = DataFactory.json(container.toJson());

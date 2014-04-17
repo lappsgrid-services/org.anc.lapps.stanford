@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Keith Suderman
@@ -25,6 +26,9 @@ import java.util.Map;
 public class SentenceSplitter extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
+
+   public static final long DELAY = 5;
+   public static final TimeUnit UNIT = TimeUnit.SECONDS;
 
    public SentenceSplitter()
    {
@@ -60,16 +64,19 @@ public class SentenceSplitter extends AbstractStanfordService
       StanfordCoreNLP service = null;
       try
       {
-         service = pool.take();
+         //service = pool.take();
+         service = pool.poll(DELAY, UNIT);
+         if (service == null) {
+            logger.warn("The SentenceSplitter was unable to respond to a request in a timely fashion.");
+            return DataFactory.error(Messages.BUSY);
+         }
+
          service.annotate(document);
          List<CoreMap> sentences = document.get(SentencesAnnotation.class);
          ProcessingStep step = Converter.addSentences(new ProcessingStep(), sentences);
-         //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford splitter");
-         String name = this.getClass().getName() + ":" + Version.getVersion();
-         Map<String,String> metadata = step.getMetadata();
-         metadata.put(Metadata.PRODUCED_BY, name);
-         metadata.put(Metadata.CONTAINS, Annotations.SENTENCE);
-
+         String producer = this.getClass().getName() + ":" + Version.getVersion();
+         step.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
+         step.addContains(Annotations.SENTENCE, producer, "chunk:sentence");
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
       }

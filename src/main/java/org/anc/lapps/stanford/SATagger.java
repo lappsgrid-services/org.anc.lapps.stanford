@@ -4,10 +4,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
+import org.anc.lapps.serialization.*;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
@@ -18,6 +18,7 @@ import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
@@ -28,14 +29,24 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 public class SATagger implements WebService
 {
+   /** The number of processing threads to create. */
+   public static final int POOL_SIZE = 2;
+   /** The time to wait for a processing thead to become available to service incoming requests. */
+   public static final long DELAY = 5;
+   public static final TimeUnit UNIT = TimeUnit.SECONDS;
+
    private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
 
-   private MaxentTagger tagger;
+//   private MaxentTagger tagger;
+   private BlockingQueue<MaxentTagger> pool;
 
    public SATagger() //throws LappsException
    {
       logger.info("Creating the MaxentTagger");
-      tagger = new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH);
+      for (int i = 0; i < POOL_SIZE; ++i)
+      {
+         pool.add(new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH));
+      }
    }
    
    @Override
@@ -48,14 +59,14 @@ public class SATagger implements WebService
 //      {
 //         return input;
 //      }
-      long type = input.getDiscriminator();
-      if (type == Types.ERROR)
+      long discriminator = input.getDiscriminator();
+      if (discriminator == Types.ERROR)
       {
          return input;
       }
-      if (type != Types.JSON)
+      if (discriminator != Types.JSON)
       {
-         String name = DiscriminatorRegistry.get(type);
+         String name = DiscriminatorRegistry.get(discriminator);
          String message = "Invalid input type. Expected JSON but found " + name;
          logger.warn(message);
          return DataFactory.error(message);
@@ -79,8 +90,16 @@ public class SATagger implements WebService
          labels.add(new LappsCoreLabel(a));
       }
 
+      MaxentTagger tagger = null;
       try
       {
+//         tagger = pool.take();
+         tagger = pool.poll(DELAY, UNIT);
+         if (tagger == null)
+         {
+            logger.warn("The Stanford tagger was unable to respond in a timely fashion.");
+            return DataFactory.error(Messages.BUSY);
+         }
          tagger.tagCoreLabels(labels);
       }
       catch (Exception e)
@@ -91,15 +110,19 @@ public class SATagger implements WebService
          e.printStackTrace(writer);
          return DataFactory.error(stringWriter.toString());
       }
-      
+      finally
+      {
+         if (tagger != null)
+         {
+            pool.add(tagger);
+         }
+      }
+
       ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
-      String name = this.getClass().getName() + ":" + Version.getVersion();
-      Map<String,String> metadata = step.getMetadata();
-      metadata.put(Metadata.PRODUCED_BY, name);
-      metadata.put(Metadata.CONTAINS, Features.PART_OF_SPEECH);
+      String producer = this.getClass().getName() + ":" + Version.getVersion();
+      step.addContains(Features.Token.PART_OF_SPEECH, producer, Contents.TagSets.PENN);
       container.getSteps().add(step);
       data = DataFactory.json(container.toJson());
-      
       return data;
    }
    
@@ -112,7 +135,7 @@ public class SATagger implements WebService
    @Override
    public long[] produces()
    {
-      return new long[]{Types.JSON, Types.TOKEN, Types.POS};
+      return new long[]{Types.JSON, Types.POS};
    }
 
    @Override

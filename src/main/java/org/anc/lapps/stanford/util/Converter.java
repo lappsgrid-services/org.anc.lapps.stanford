@@ -64,9 +64,9 @@ public class Converter
          annotation.setEnd(end);
 
          Map<String,String> features = annotation.getFeatures();
-         add(features, Features.LEMMA, token.lemma());
+         add(features, Features.Token.LEMMA, token.lemma());
          add(features, "category", token.category());
-         add(features, Features.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+         add(features, Features.Token.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
          add(features, "ner", token.ner());
          add(features, "word", token.word());
@@ -90,9 +90,9 @@ public class Converter
          annotation.setEnd(end);
 
          Map<String,String> features = annotation.getFeatures();
-         add(features, Features.LEMMA, token.lemma());
+         add(features, Features.Token.LEMMA, token.lemma());
          add(features, "category", token.category());
-         add(features, Features.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+         add(features, Features.Token.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
          add(features, "ner", token.ner());
          add(features, "word", token.word());
@@ -165,8 +165,8 @@ public class Converter
             step.addAnnotation(tokenAnnotation);
 
             Map<String,String> features = tokenAnnotation.getFeatures();
-            add(features, Features.LEMMA, token.lemma());
-            add(features, Features.PART_OF_SPEECH, token.category());
+            add(features, Features.Token.LEMMA, token.lemma());
+            add(features, Features.Token.PART_OF_SPEECH, token.category());
             add(features, "ner", token.ner());
             add(features, "string", token.word());
             // this is the POS tag of the token
