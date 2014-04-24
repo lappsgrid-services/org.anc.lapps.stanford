@@ -11,6 +11,7 @@ import org.anc.lapps.stanford.LappsCoreLabel;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
@@ -36,20 +37,21 @@ public class StanfordUtils
 
    public static boolean contains(ProcessingStep step, final String annotation)
    {
-      Map<String,String> metadata = step.getMetadata();
-      String contains = metadata.get(Metadata.CONTAINS);
-      if (contains.contains(annotation))
-      {
-         return true;
-      }
-      for (Annotation a : step.getAnnotations())
-      {
-         if (annotation.equals(a.getLabel()))
-         {
-            return true;
-         }
-      }
-      return false;
+      Map metadata = step.getMetadata();
+      Map contains = (Map) metadata.get("contains");
+      return contains.get(annotation) != null;
+//      if (contains.contains(annotation))
+//      {
+//         return true;
+//      }
+//      for (Annotation a : step.getAnnotations())
+//      {
+//         if (annotation.equals(a.getLabel()))
+//         {
+//            return true;
+//         }
+//      }
+//      return false;
    }
 
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)

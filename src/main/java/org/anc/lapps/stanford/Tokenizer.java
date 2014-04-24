@@ -67,8 +67,8 @@ public class Tokenizer extends AbstractStanfordService
          }
          ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
          String name = this.getClass().getName() + ":" + Version.getVersion();
-         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-         step.getMetadata().put(Metadata.CONTAINS, Annotations.TOKEN);
+//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
+//         step.getMetadata().put(Metadata.CONTAINS, Annotations.TOKEN);
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
       }

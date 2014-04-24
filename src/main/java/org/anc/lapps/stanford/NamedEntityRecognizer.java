@@ -66,8 +66,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
          ProcessingStep step = new ProcessingStep();
          String name = this.getClass().getName() + ":" + Version.getVersion();
-         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
+//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
+//         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
          Converter.addSentences(step, sentences);
          Converter.addTokens(step, document.get(CoreAnnotations.TokensAnnotation.class));
          container.getSteps().add(step);

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +44,7 @@ public class SATagger implements WebService
    public SATagger() //throws LappsException
    {
       logger.info("Creating the MaxentTagger");
+      pool = new ArrayBlockingQueue<MaxentTagger>(POOL_SIZE);
       for (int i = 0; i < POOL_SIZE; ++i)
       {
          pool.add(new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH));
