@@ -2,6 +2,7 @@ package org.anc.lapps.stanford;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -152,7 +153,7 @@ public class SANamedEntityRecognizer implements WebService
             if (!ner.equals(invalidNer))
             {
                Annotation annotation = new Annotation();
-               annotation.setLabel(ner);
+               annotation.setLabel(correctCase(ner));
                annotation.setId(id.generate("ne"));
                int start = (label.beginPosition());
                int end = (label.endPosition());
@@ -179,6 +180,13 @@ public class SANamedEntityRecognizer implements WebService
       data = DataFactory.json(container.toJson());
       
       return data;
+   }
+
+   private String correctCase(String item)
+   {
+      String head = item.substring(0, 1);
+      String tail = item.substring(1).toLowerCase();
+      return head + tail;
    }
 
    private void add(Map<String,String> features, String name, String value)
