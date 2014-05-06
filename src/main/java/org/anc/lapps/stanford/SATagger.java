@@ -31,7 +31,7 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 public class SATagger implements WebService
 {
    /** The number of processing threads to create. */
-   public static final int POOL_SIZE = 2;
+   public static final int POOL_SIZE = 1;
    /** The time to wait for a processing thead to become available to service incoming requests. */
    public static final long DELAY = 5;
    public static final TimeUnit UNIT = TimeUnit.SECONDS;

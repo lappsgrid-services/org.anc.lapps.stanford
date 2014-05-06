@@ -44,7 +44,7 @@ public class SentenceSplitter extends AbstractStanfordService
       long type = input.getDiscriminator();
       if (type == Types.TEXT)
       {
-         container = new Container();
+         container = new Container(false);
          container.setText(input.getPayload());
       }
       else if (type == Types.JSON)

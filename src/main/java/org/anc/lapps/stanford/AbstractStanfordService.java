@@ -19,7 +19,7 @@ import java.util.concurrent.BlockingQueue;
 public abstract class AbstractStanfordService implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
-   protected static final int POOL_SIZE = 4;
+   protected static final int POOL_SIZE = 1;
 //   protected StanfordCoreNLP service;
    protected BlockingQueue<StanfordCoreNLP> pool;
 
@@ -51,7 +51,7 @@ public abstract class AbstractStanfordService implements WebService
       }
       else if (inputType == Types.TEXT)
       {
-         container = new Container();
+         container = new Container(false);
          container.setText(input.getPayload());
       }
       else if (inputType == Types.JSON)

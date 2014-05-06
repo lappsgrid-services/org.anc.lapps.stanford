@@ -8,16 +8,20 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.lapps.stanford.util.StanfordUtils;
+import org.anc.util.IDGenerator;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +33,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 
 public class SANamedEntityRecognizer implements WebService
 {
-   public static final int POOL_SIZE = 2;
+   public static final int POOL_SIZE = 1;
 
    /* How long to wait for a processing thread to become available to service an incoming request. */
    public static final long DELAY = 5;
@@ -139,27 +143,50 @@ public class SANamedEntityRecognizer implements WebService
       }
       if (classifiedLabels != null)
       {
+         IDGenerator id = new IDGenerator();
+         ProcessingStep step = new ProcessingStep();
          String invalidNer = "O";
          for (CoreLabel label : classifiedLabels)
          {
             String ner = label.get(AnswerAnnotation.class);
             if (!ner.equals(invalidNer))
             {
-               label.setNER(ner);
+               Annotation annotation = new Annotation();
+               annotation.setLabel(ner);
+               annotation.setId(id.generate("ne"));
+               int start = (label.beginPosition());
+               int end = (label.endPosition());
+               annotation.setStart(start);
+               annotation.setEnd(end);
+
+               Map<String,String> features = annotation.getFeatures();
+               add(features, Features.Token.LEMMA, label.lemma());
+               add(features, "category", label.category());
+               add(features, Features.Token.PART_OF_SPEECH, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+
+               add(features, "ner", label.ner());
+               add(features, "word", label.word());
+               step.addAnnotation(annotation);
+
             }
          }
 
-         ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
+         //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
          step.addContains(Annotations.NE, producer, "ner:stanford");
-//         Map<String, String> metadata = step.getMetadata();
-//         metadata.put(Metadata.PRODUCED_BY, name);
-//         metadata.put(Metadata.CONTAINS, Annotations.NE);
          container.getSteps().add(step);
       }
       data = DataFactory.json(container.toJson());
       
       return data;
+   }
+
+   private void add(Map<String,String> features, String name, String value)
+   {
+      if (value != null)
+      {
+         features.put(name, value);
+      }
    }
 
    @Override

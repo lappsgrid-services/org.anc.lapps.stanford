@@ -2,6 +2,7 @@ package org.anc.lapps.stanford;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +21,7 @@ public class StanfordParserService implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(StanfordParserService.class);
 
-   protected static final int POOL_SIZE = 4;
+   protected static final int POOL_SIZE = 1;
    protected static final long DELAY = 5;
    protected static final TimeUnit UNIT = TimeUnit.SECONDS;
 
@@ -31,6 +32,7 @@ public class StanfordParserService implements WebService
    public StanfordParserService()
    {
       logger.info("Initializing the Stanford Parser pool");
+      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
       properties = new Properties();
       for (int i = 0; i < POOL_SIZE; ++i)
       {
