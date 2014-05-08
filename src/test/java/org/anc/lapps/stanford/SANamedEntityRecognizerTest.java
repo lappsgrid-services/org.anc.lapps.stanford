@@ -56,4 +56,15 @@ public class SANamedEntityRecognizerTest
       result = service.execute(input);
       System.out.println(result.getPayload());
    }
+
+   @Test
+   public void testNer() throws IOException
+   {
+      String taggedText = ResourceLoader.loadString("TaggedText.json");
+      Data input = DataFactory.json(taggedText);
+      WebService service = new SANamedEntityRecognizer();
+      Data result = service.execute(input);
+      assertTrue(result.getDiscriminator() != Types.ERROR);
+      System.out.println(result.getPayload());
+   }
 }
