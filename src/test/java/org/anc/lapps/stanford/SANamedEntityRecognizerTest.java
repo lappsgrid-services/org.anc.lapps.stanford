@@ -14,11 +14,10 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
-@Ignore
 public class SANamedEntityRecognizerTest
 {
 
-   @Test
+   @Ignore
    public void testSANamedEntityRecognizer() throws IOException, LappsException
    {
       String text = ResourceLoader.loadString("Bartok.txt");
@@ -64,7 +63,7 @@ public class SANamedEntityRecognizerTest
       Data input = DataFactory.json(taggedText);
       WebService service = new SANamedEntityRecognizer();
       Data result = service.execute(input);
-      assertTrue(result.getDiscriminator() != Types.ERROR);
+      assertTrue(result.getPayload(), result.getDiscriminator() != Types.ERROR);
       System.out.println(result.getPayload());
    }
 }

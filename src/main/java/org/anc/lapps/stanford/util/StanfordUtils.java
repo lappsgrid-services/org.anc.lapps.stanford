@@ -39,7 +39,7 @@ public class StanfordUtils
    {
       Map metadata = step.getMetadata();
       Map contains = (Map) metadata.get("contains");
-      return contains.get(annotation) != null;
+      return contains == null ? false : contains.get(annotation) != null;
 //      if (contains.contains(annotation))
 //      {
 //         return true;

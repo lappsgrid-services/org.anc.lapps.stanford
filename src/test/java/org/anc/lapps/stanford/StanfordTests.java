@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
  * @author Keith Suderman
  */
 
+@Ignore
 public class StanfordTests
 {
    protected Data data;
