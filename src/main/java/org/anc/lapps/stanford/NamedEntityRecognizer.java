@@ -1,3 +1,19 @@
+/*-
+ * Copyright 2014 The American National Corpus.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.anc.lapps.stanford;
 
 //import edu.stanford.nlp.ling.CoreAnnotations;
@@ -66,8 +82,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
          ProcessingStep step = new ProcessingStep();
          String name = this.getClass().getName() + ":" + Version.getVersion();
-         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
+//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
+//         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
          Converter.addSentences(step, sentences);
          Converter.addTokens(step, document.get(CoreAnnotations.TokensAnnotation.class));
          container.getSteps().add(step);

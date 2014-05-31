@@ -15,7 +15,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 
-//@Ignore
+@Ignore
 public class SATokenizerTest
 {
    private WebService service;

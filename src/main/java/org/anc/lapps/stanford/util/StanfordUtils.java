@@ -1,3 +1,19 @@
+/*-
+ * Copyright 2014 The American National Corpus.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.anc.lapps.stanford.util;
 
 import java.util.ArrayList;
@@ -11,6 +27,7 @@ import org.anc.lapps.stanford.LappsCoreLabel;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
 import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
@@ -36,20 +53,21 @@ public class StanfordUtils
 
    public static boolean contains(ProcessingStep step, final String annotation)
    {
-      Map<String,String> metadata = step.getMetadata();
-      String contains = metadata.get(Metadata.CONTAINS);
-      if (contains.contains(annotation))
-      {
-         return true;
-      }
-      for (Annotation a : step.getAnnotations())
-      {
-         if (annotation.equals(a.getLabel()))
-         {
-            return true;
-         }
-      }
-      return false;
+      Map metadata = step.getMetadata();
+      Map contains = (Map) metadata.get("contains");
+      return contains == null ? false : contains.get(annotation) != null;
+//      if (contains.contains(annotation))
+//      {
+//         return true;
+//      }
+//      for (Annotation a : step.getAnnotations())
+//      {
+//         if (annotation.equals(a.getLabel()))
+//         {
+//            return true;
+//         }
+//      }
+//      return false;
    }
 
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)
@@ -77,7 +95,7 @@ public class StanfordUtils
 //            break;
 //         }
 //      }
-      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.PART_OF_SPEECH);
+      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
       if (taggedStep == null)
       {
          return null; 
