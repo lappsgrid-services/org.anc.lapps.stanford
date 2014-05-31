@@ -1,3 +1,19 @@
+/*-
+ * Copyright 2014 The American National Corpus.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.anc.lapps.stanford.util;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -64,9 +80,9 @@ public class Converter
          annotation.setEnd(end);
 
          Map<String,String> features = annotation.getFeatures();
-         add(features, Features.LEMMA, token.lemma());
+         add(features, Features.Token.LEMMA, token.lemma());
          add(features, "category", token.category());
-         add(features, Features.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+         add(features, Features.Token.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
          add(features, "ner", token.ner());
          add(features, "word", token.word());
@@ -90,9 +106,9 @@ public class Converter
          annotation.setEnd(end);
 
          Map<String,String> features = annotation.getFeatures();
-         add(features, Features.LEMMA, token.lemma());
+         add(features, Features.Token.LEMMA, token.lemma());
          add(features, "category", token.category());
-         add(features, Features.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+         add(features, Features.Token.PART_OF_SPEECH, token.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
          add(features, "ner", token.ner());
          add(features, "word", token.word());
@@ -165,8 +181,8 @@ public class Converter
             step.addAnnotation(tokenAnnotation);
 
             Map<String,String> features = tokenAnnotation.getFeatures();
-            add(features, Features.LEMMA, token.lemma());
-            add(features, Features.PART_OF_SPEECH, token.category());
+            add(features, Features.Token.LEMMA, token.lemma());
+            add(features, Features.Token.PART_OF_SPEECH, token.category());
             add(features, "ner", token.ner());
             add(features, "string", token.word());
             // this is the POS tag of the token

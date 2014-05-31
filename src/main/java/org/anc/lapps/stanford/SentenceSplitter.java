@@ -1,3 +1,19 @@
+/*-
+ * Copyright 2014 The American National Corpus.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.anc.lapps.stanford;
 
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -18,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Keith Suderman
@@ -25,6 +42,9 @@ import java.util.Map;
 public class SentenceSplitter extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
+
+   public static final long DELAY = 5;
+   public static final TimeUnit UNIT = TimeUnit.SECONDS;
 
    public SentenceSplitter()
    {
@@ -40,7 +60,7 @@ public class SentenceSplitter extends AbstractStanfordService
       long type = input.getDiscriminator();
       if (type == Types.TEXT)
       {
-         container = new Container();
+         container = new Container(false);
          container.setText(input.getPayload());
       }
       else if (type == Types.JSON)
@@ -60,16 +80,19 @@ public class SentenceSplitter extends AbstractStanfordService
       StanfordCoreNLP service = null;
       try
       {
-         service = pool.take();
+         //service = pool.take();
+         service = pool.poll(DELAY, UNIT);
+         if (service == null) {
+            logger.warn("The SentenceSplitter was unable to respond to a request in a timely fashion.");
+            return DataFactory.error(Messages.BUSY);
+         }
+
          service.annotate(document);
          List<CoreMap> sentences = document.get(SentencesAnnotation.class);
          ProcessingStep step = Converter.addSentences(new ProcessingStep(), sentences);
-         //step.getMetadata().put(Metadata.PRODUCED_BY, "Stanford splitter");
-         String name = this.getClass().getName() + ":" + Version.getVersion();
-         Map<String,String> metadata = step.getMetadata();
-         metadata.put(Metadata.PRODUCED_BY, name);
-         metadata.put(Metadata.CONTAINS, Annotations.SENTENCE);
-
+         String producer = this.getClass().getName() + ":" + Version.getVersion();
+         step.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
+         step.addContains(Annotations.SENTENCE, producer, "chunk:sentence");
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
       }
