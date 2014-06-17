@@ -21,7 +21,10 @@ import org.anc.lapps.serialization.Container;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.Discriminator;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.experimental.annotations.CommonMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,12 @@ import java.util.concurrent.BlockingQueue;
 /**
  * @author Keith Suderman
  */
+@CommonMetadata(
+        vendor = "http://www.anc.org",
+        allow = "any",
+        format = "lapps",
+        language = "en"
+)
 public abstract class AbstractStanfordService implements WebService
 {
    private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
@@ -60,17 +69,17 @@ public abstract class AbstractStanfordService implements WebService
    protected Container createContainer(Data input)
    {
       Container container = null;
-      long inputType = input.getDiscriminator();
-      if (inputType == Types.ERROR)
+      Discriminator discriminator = DiscriminatorRegistry.getByUri(input.getDiscriminator());
+      if (discriminator.getId() == Types.ERROR)
       {
          return null;
       }
-      else if (inputType == Types.TEXT)
+      else if (discriminator.getId() == Types.TEXT)
       {
          container = new Container(false);
          container.setText(input.getPayload());
       }
-      else if (inputType == Types.JSON)
+      else if (discriminator.getId() == Types.JSON)
       {
          container = new Container(input.getPayload());
       }
