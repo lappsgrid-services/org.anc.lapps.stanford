@@ -10,6 +10,7 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Uri;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class StanfordParserServiceTest
       System.out.println("StanfordParserServiceTest.testData");
       Data data = getData();
       String payload = data.getPayload();
-      long type = data.getDiscriminator();
+      long type = DiscriminatorRegistry.get(data.getDiscriminator());
       String name = DiscriminatorRegistry.get(type);
       assertTrue("Expected text, found: " + name, type == Types.TEXT);
       assertTrue("Payload is null.", payload != null);
@@ -83,12 +84,13 @@ public class StanfordParserServiceTest
    protected Data test(String annotators) throws IOException
    {
       WebService service = new StanfordParserService();
-      Data parameter = new Data(Types.TEXT, annotators);
+      Data parameter = new Data(Uri.TEXT, annotators);
       Data result = service.configure(parameter);
-      assertTrue(result.getDiscriminator() == Types.OK);
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
+      assertTrue(type == Types.OK);
       System.out.println("Executing pipeline " + annotators);
       result = service.execute(getData());
-      assertTrue(result.getDiscriminator() == Types.DOCUMENT);
+      assertTrue(type == Types.DOCUMENT);
       return result;
    }
 
@@ -106,7 +108,7 @@ public class StanfordParserServiceTest
       UTF8Reader reader = new UTF8Reader(stream);
       try
       {
-         return new Data(Types.TEXT, reader.readString());
+         return new Data(Uri.TEXT, reader.readString());
       }
       finally
       {

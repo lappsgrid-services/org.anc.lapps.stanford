@@ -1,5 +1,9 @@
 package org.anc.lapps.stanford;
 
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
 import org.anc.lapps.serialization.Container;
 import org.anc.resource.ResourceLoader;
 import org.junit.After;
@@ -9,15 +13,10 @@ import org.junit.Test;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.Discriminator;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
-
-/**
- * @author Keith Suderman
- */
 @Ignore
 public class TokenizerTest
 {
@@ -43,10 +42,12 @@ public class TokenizerTest
    @Test
    public void testTokenizer() throws IOException
    {
+      WebService service = new Tokenizer();
       String inputText = ResourceLoader.loadString("Bartok.txt");
       Data input = DataFactory.text(inputText);
       Data result = service.execute(input);
-      long resultType = result.getDiscriminator();
+      Discriminator discriminator = DiscriminatorRegistry.getByUri(result.getDiscriminator());
+      long resultType = discriminator.getId();
       String payload = result.getPayload();
 
       assertTrue(payload, resultType != Types.ERROR);

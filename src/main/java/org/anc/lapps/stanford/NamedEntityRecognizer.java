@@ -18,7 +18,6 @@ package org.anc.lapps.stanford;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -29,7 +28,6 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
-import org.anc.lapps.stanford.util.Converter;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.util.IDGenerator;
 import org.lappsgrid.api.Data;
@@ -39,7 +37,6 @@ import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +45,7 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 
-public class SANamedEntityRecognizer implements WebService
+public class NamedEntityRecognizer extends AbstractStanfordService
 {
    public static final int POOL_SIZE = 1;
 
@@ -56,7 +53,7 @@ public class SANamedEntityRecognizer implements WebService
    public static final long DELAY = 5;
    public static final TimeUnit UNIT = TimeUnit.SECONDS;
 
-   private static final Logger logger = LoggerFactory.getLogger(SANamedEntityRecognizer.class);
+   private static final Logger logger = LoggerFactory.getLogger(NamedEntityRecognizer.class);
 
    private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
 
@@ -65,8 +62,9 @@ public class SANamedEntityRecognizer implements WebService
    protected Throwable savedException = null;
    protected String exceptionMessage = null;
 
-   public SANamedEntityRecognizer()
+   public NamedEntityRecognizer()
    {
+      super(NamedEntityRecognizer.class);
       pool = new ArrayBlockingQueue<AbstractSequenceClassifier>(POOL_SIZE);
       try
       {
@@ -107,7 +105,7 @@ public class SANamedEntityRecognizer implements WebService
          return DataFactory.error(exceptionMessage);
       }
 
-      long type = input.getDiscriminator();
+      long type = DiscriminatorRegistry.get(input.getDiscriminator());
       if (type == Types.ERROR)
       {
          return input;
@@ -211,18 +209,6 @@ public class SANamedEntityRecognizer implements WebService
       {
          features.put(name, value);
       }
-   }
-
-   @Override
-   public long[] requires()
-   {
-      return new long[] { Types.JSON, Types.TOKEN, Types.POS };
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[]{Types.JSON, Types.NAMED_ENTITES};
    }
 
    @Override

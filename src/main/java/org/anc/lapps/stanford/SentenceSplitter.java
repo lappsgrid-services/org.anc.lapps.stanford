@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,12 +44,22 @@ public class SentenceSplitter extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
 
-   public static final long DELAY = 5;
-   public static final TimeUnit UNIT = TimeUnit.SECONDS;
+//   public static final long DELAY = 5;
+//   public static final TimeUnit UNIT = TimeUnit.SECONDS;
+
+   private StanfordCoreNLP service;
 
    public SentenceSplitter()
    {
-      super("tokenize, ssplit");
+      super(SentenceSplitter.class);
+      Properties properties = new Properties();
+      properties.setProperty("annotators", "tokenizer, ssplit");
+//      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
+//      for (int i = 0; i < POOL_SIZE; ++i)
+//      {
+//         pool.add(new StanfordCoreNLP(properties));
+//      }
+      service = new StanfordCoreNLP(properties);
       logger.info("Standford sentence splitter created.");
    }
 
@@ -57,7 +68,7 @@ public class SentenceSplitter extends AbstractStanfordService
    {
       logger.info("Executing Stanford sentence splitter.");
       Container container;
-      long type = input.getDiscriminator();
+      long type = DiscriminatorRegistry.get(input.getDiscriminator());
       if (type == Types.TEXT)
       {
          container = new Container(false);
@@ -78,14 +89,14 @@ public class SentenceSplitter extends AbstractStanfordService
       Annotation document = new Annotation(container.getText());
       Data data = null;
       StanfordCoreNLP service = null;
-      try
-      {
+//      try
+//      {
          //service = pool.take();
-         service = pool.poll(DELAY, UNIT);
-         if (service == null) {
-            logger.warn("The SentenceSplitter was unable to respond to a request in a timely fashion.");
-            return DataFactory.error(Messages.BUSY);
-         }
+//         service = pool.poll(DELAY, UNIT);
+//         if (service == null) {
+//            logger.warn("The SentenceSplitter was unable to respond to a request in a timely fashion.");
+//            return DataFactory.error(Messages.BUSY);
+//         }
 
          service.annotate(document);
          List<CoreMap> sentences = document.get(SentencesAnnotation.class);
@@ -95,33 +106,24 @@ public class SentenceSplitter extends AbstractStanfordService
          step.addContains(Annotations.SENTENCE, producer, "chunk:sentence");
          container.getSteps().add(step);
          data = DataFactory.json(container.toJson());
-      }
-      catch (InterruptedException e)
-      {
-         data = DataFactory.error(e.getMessage());
-      }
-      finally
-      {
-         if (service != null)
-         {
-            pool.add(service);
-         }
-      }
-//      String stringList = LappsUtils.makeStringList(list);
+//      }
+//      catch (InterruptedException e)
+//      {
+//         data = DataFactory.error(e.getMessage());
+//      }
+//      finally
+//      {
+//         if (service != null)
+//         {
+//            pool.add(service);
+//         }
+//      }
       logger.info("Sentence splitter complete.");
       return data;
    }
 
-
-   @Override
-   public long[] requires()
+   public Data configure(Data input)
    {
-      return new long[] { Types.TEXT };
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[] { Types.JSON, Types.SENTENCE, Types.TOKEN };
+      return DataFactory.error("Unsupported operation.");
    }
 }

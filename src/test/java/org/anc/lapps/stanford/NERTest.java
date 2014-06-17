@@ -8,7 +8,9 @@ import org.anc.resource.ResourceLoader;
 import org.junit.*;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Uri;
 
 import java.io.IOException;
 
@@ -57,11 +59,11 @@ public class NERTest
    public void testExecute() throws IOException
    {
       System.out.println("org.anc.lapps.stanford.NERTest.testExecute");
-      Data input = new Data(Types.TEXT, text);
+      Data input = new Data(Uri.TEXT, text);
       Data result = service.execute(input);
       assertTrue("Result is null", result != null);
 
-      long type = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       String payload = result.getPayload();
       assertTrue(payload != null);
 

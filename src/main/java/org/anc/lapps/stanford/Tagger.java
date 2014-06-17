@@ -19,7 +19,6 @@ package org.anc.lapps.stanford;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -37,14 +36,13 @@ import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class SATagger implements WebService
+public class Tagger extends AbstractStanfordService
 {
    /** The number of processing threads to create. */
    public static final int POOL_SIZE = 1;
@@ -52,13 +50,14 @@ public class SATagger implements WebService
    public static final long DELAY = 5;
    public static final TimeUnit UNIT = TimeUnit.SECONDS;
 
-   private static final Logger logger = LoggerFactory.getLogger(SATagger.class);
+   private static final Logger logger = LoggerFactory.getLogger(Tagger.class);
 
 //   private MaxentTagger tagger;
    private BlockingQueue<MaxentTagger> pool;
 
-   public SATagger() //throws LappsException
+   public Tagger() //throws LappsException
    {
+      super(Tagger.class);
       logger.info("Creating the MaxentTagger");
       pool = new ArrayBlockingQueue<MaxentTagger>(POOL_SIZE);
       for (int i = 0; i < POOL_SIZE; ++i)
@@ -77,7 +76,7 @@ public class SATagger implements WebService
 //      {
 //         return input;
 //      }
-      long discriminator = input.getDiscriminator();
+      long discriminator = DiscriminatorRegistry.get(input.getDiscriminator());
       if (discriminator == Types.ERROR)
       {
          return input;
@@ -145,18 +144,6 @@ public class SATagger implements WebService
    }
    
    @Override
-   public long[] requires()
-   {
-      return new long[]{ Types.JSON, Types.TOKEN };
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[]{Types.JSON, Types.POS};
-   }
-
-   @Override
    public Data configure(Data arg0)
    {
       return DataFactory.error("Unsupported operation.");
@@ -165,7 +152,7 @@ public class SATagger implements WebService
    protected Container createContainer(Data input)
    {
       Container container = null;
-      long inputType = input.getDiscriminator();
+      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
       if (inputType == Types.ERROR)
       {
          return null;
@@ -184,12 +171,12 @@ public class SATagger implements WebService
 
    public static void main(String[] args) throws IOException, LappsException
    {
-      WebService tokenizer = new SATokenizer();
+      WebService tokenizer = new Tokenizer();
       String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
       Data tokenizerInput = DataFactory.text(inputText);
       Data tokenizerResult = tokenizer.execute(tokenizerInput);
       
-      WebService service = new SATagger();
+      WebService service = new Tagger();
       Data result = service.execute(tokenizerResult);
       Container container = new Container(result.getPayload());
       

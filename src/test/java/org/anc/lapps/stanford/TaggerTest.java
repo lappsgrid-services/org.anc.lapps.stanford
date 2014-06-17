@@ -11,17 +11,18 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 
 @Ignore
-public class SATaggerTest
+public class TaggerTest
 {
    WebService service;
    
    @Before
    public void setup() throws LappsException
    {
-      this.service = new SATagger();
+      this.service = new Tagger();
    }
    
    @After
@@ -36,15 +37,15 @@ public class SATaggerTest
       long ticks = System.nanoTime();
       String text = ResourceLoader.loadString("Bartok.txt");
       Data input = DataFactory.text(text);
-      WebService tokenizer = new SATokenizer();
+      WebService tokenizer = new Tokenizer();
       Data tokenized = tokenizer.execute(input);
       
       Data result = service.execute(tokenized);
-      long resultType = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       String payload = result.getPayload();
 
-      assertTrue(payload, resultType != Types.ERROR);
-      assertTrue("Expected JSON", resultType == Types.JSON);
+      assertTrue(payload, type != Types.ERROR);
+      assertTrue("Expected JSON", type == Types.JSON);
       Container container = new Container(payload);
       System.out.println(container.toPrettyJson());
       System.out.println("Time spent : " + (System.nanoTime() - ticks)/1e9 + "s");

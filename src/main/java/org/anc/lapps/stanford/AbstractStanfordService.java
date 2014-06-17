@@ -17,7 +17,9 @@
 package org.anc.lapps.stanford;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import org.anc.io.UTF8Reader;
 import org.anc.lapps.serialization.Container;
+import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
@@ -28,6 +30,9 @@ import org.lappsgrid.experimental.annotations.CommonMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -43,46 +48,51 @@ import java.util.concurrent.BlockingQueue;
 )
 public abstract class AbstractStanfordService implements WebService
 {
-   private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
-   protected static final int POOL_SIZE = 1;
-//   protected StanfordCoreNLP service;
-   protected BlockingQueue<StanfordCoreNLP> pool;
+   protected Data metadata;
 
-   public AbstractStanfordService(String annotators)
+   public AbstractStanfordService(Class<?> serviceClass)
    {
-      logger.info("Creating AbstractStanfordService with annotators: {}", annotators);
-      Properties properties = new Properties();
-      properties.setProperty("annotators", annotators);
-      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
-      for (int i = 0; i < POOL_SIZE; ++i)
+      try
       {
-         pool.add(new StanfordCoreNLP(properties));
+         loadMetadata(serviceClass);
+      }
+      catch (IOException ignored)
+      {
+         // The only IOException not handled by loadMetadata is the one
+         // thrown when closing the input stream, and by that point we
+         // are good to go.
       }
    }
 
-   @Override
-   public Data configure(Data config)
+   private void loadMetadata(Class<?> serviceClass) throws IOException
    {
-      return DataFactory.error("Unsupported operation.");
+      ClassLoader loader = ResourceLoader.getClassLoader();
+      String resourceName = "metadata/" + serviceClass.getName() + ".json";
+      InputStream inputStream = loader.getResourceAsStream(resourceName);
+      UTF8Reader reader = null;
+      try
+      {
+         reader = new UTF8Reader(inputStream);
+         String json = reader.readString();
+         metadata = DataFactory.meta(json);
+      }
+      catch (IOException e)
+      {
+         metadata = DataFactory.error("Unable to load metadata from " + resourceName, e);
+         throw e;
+      }
+      finally
+      {
+         if (reader != null)
+         {
+            reader.close();
+         }
+      }
    }
 
-   protected Container createContainer(Data input)
+
+   public Data getMetadata()
    {
-      Container container = null;
-      Discriminator discriminator = DiscriminatorRegistry.getByUri(input.getDiscriminator());
-      if (discriminator.getId() == Types.ERROR)
-      {
-         return null;
-      }
-      else if (discriminator.getId() == Types.TEXT)
-      {
-         container = new Container(false);
-         container.setText(input.getPayload());
-      }
-      else if (discriminator.getId() == Types.JSON)
-      {
-         container = new Container(input.getPayload());
-      }
-      return container;
+      return metadata;
    }
 }

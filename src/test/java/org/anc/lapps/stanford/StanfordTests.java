@@ -81,7 +81,7 @@ public class StanfordTests
       WebService service = new SentenceSplitter();
       Data result = service.execute(data);
       String payload = result.getPayload();
-      long type = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       assertTrue(payload, type != Types.ERROR);
       assertTrue("Expected JSON", type == Types.JSON);
       assertTrue("Payload is null", payload != null);
@@ -106,7 +106,7 @@ public class StanfordTests
       WebService service = new Tokenizer();
       Data result = service.execute(data);
       String payload = result.getPayload();
-      long type = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       assertTrue(payload, type != Types.ERROR);
       assertTrue("Expected JSON", type == Types.JSON);
       Container container = new Container(payload);
@@ -118,7 +118,7 @@ public class StanfordTests
    {
       WebService service = new Tagger();
       Data result = service.execute(data);
-      long type = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       String payload = result.getPayload();
       assertTrue(payload, type != Types.ERROR);
       assertTrue("Expected JSON", type == Types.JSON);
@@ -132,7 +132,7 @@ public class StanfordTests
    {
       WebService service = new NamedEntityRecognizer();
       Data result = service.execute(data);
-      long type = result.getDiscriminator();
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
       String payload = result.getPayload();
       assertTrue(payload, type != Types.ERROR);
       //System.out.println(payload);
@@ -153,8 +153,8 @@ public class StanfordTests
    private void test(WebService service)
    {
       Data result = service.execute(data);
-      assertTrue(result.getPayload(), result.getDiscriminator() != Types.ERROR);
-      String type = DiscriminatorRegistry.get(result.getDiscriminator());
+      long type = DiscriminatorRegistry.get(result.getDiscriminator());
+      assertTrue(result.getPayload(), type != Types.ERROR);
       System.out.println("Return type is " + type);
       System.out.println("Payload: " + result.getPayload());
    }

@@ -12,9 +12,11 @@ import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.Discriminator;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 
-public class SANamedEntityRecognizerTest
+public class NamedEntityRecognizerTest
 {
 
    @Ignore
@@ -22,16 +24,16 @@ public class SANamedEntityRecognizerTest
    {
       String text = ResourceLoader.loadString("Bartok.txt");
       
-      WebService tokenizer = new SATokenizer();
+      WebService tokenizer = new Tokenizer();
       Data input = DataFactory.text(text);
       Data tokenized = tokenizer.execute(input);
       
-      WebService tagger = new SATagger();
+      WebService tagger = new Tagger();
       Data tagged = tagger.execute(tokenized);
       
-      WebService ner = new SANamedEntityRecognizer();
+      WebService ner = new NamedEntityRecognizer();
       Data result = ner.execute(tagged);
-      long resultType = result.getDiscriminator();
+      long resultType = DiscriminatorRegistry.get(result.getDiscriminator());
       String payload = result.getPayload();
       
       assertTrue(payload, resultType != Types.ERROR);
@@ -51,7 +53,7 @@ public class SANamedEntityRecognizerTest
       String taggedText = ResourceLoader.loadString("blog-jet-lag_tagged.json");
       input = DataFactory.json(taggedText);
       
-      service = new SANamedEntityRecognizer();
+      service = new NamedEntityRecognizer();
       result = service.execute(input);
       System.out.println(result.getPayload());
    }
@@ -61,9 +63,10 @@ public class SANamedEntityRecognizerTest
    {
       String taggedText = ResourceLoader.loadString("TaggedText.json");
       Data input = DataFactory.json(taggedText);
-      WebService service = new SANamedEntityRecognizer();
+      WebService service = new NamedEntityRecognizer();
       Data result = service.execute(input);
-      assertTrue(result.getPayload(), result.getDiscriminator() != Types.ERROR);
+      long resultType = DiscriminatorRegistry.get(result.getDiscriminator());
+      assertTrue(result.getPayload(), resultType != Types.ERROR);
       System.out.println(result.getPayload());
    }
 }

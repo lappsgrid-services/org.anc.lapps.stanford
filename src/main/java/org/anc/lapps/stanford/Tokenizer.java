@@ -19,11 +19,7 @@ package org.anc.lapps.stanford;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
-import org.anc.lapps.serialization.Annotation;
 import org.anc.lapps.serialization.Container;
 import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
@@ -33,7 +29,6 @@ import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,16 +36,21 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 
-public class SATokenizer implements WebService
+public class Tokenizer extends AbstractStanfordService
 {
-   private static final Logger logger = LoggerFactory.getLogger(SATokenizer.class);
+   private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
+
+   public Tokenizer()
+   {
+      super(Tokenizer.class);
+   }
 
    @Override
    public Data execute(Data input)
    {
       logger.info("Executing Stanford stand-alone tokenizer");
       Container container = null;
-      long type = input.getDiscriminator();
+      long type = DiscriminatorRegistry.get(input.getDiscriminator());
       if (type == Types.ERROR)
       {
          return input;
@@ -101,7 +101,7 @@ public class SATokenizer implements WebService
    protected Container createContainer(Data input)
    {
       Container container = null;
-      long inputType = input.getDiscriminator();
+      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
       if (inputType == Types.ERROR)
       {
          return null;
@@ -116,18 +116,6 @@ public class SATokenizer implements WebService
          container = new Container(input.getPayload());
       }
       return container;
-   }
-
-   @Override
-   public long[] requires()
-   {
-      return new long[] { Types.TEXT };
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[] { Types.JSON, Types.TOKEN };
    }
 
    @Override
