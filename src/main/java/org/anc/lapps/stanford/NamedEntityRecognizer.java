@@ -16,6 +16,26 @@
  */
 package org.anc.lapps.stanford;
 
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
+import org.anc.lapps.stanford.util.StanfordUtils;
+import org.anc.util.IDGenerator;
+import org.lappsgrid.api.Data;
+import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.DiscriminatorRegistry;
+import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.Annotation;
+import org.lappsgrid.serialization.Container;
+import org.lappsgrid.serialization.View;
+import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Features;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -24,27 +44,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import edu.stanford.nlp.ling.CoreAnnotations;
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
-import org.anc.lapps.stanford.util.StanfordUtils;
-import org.anc.util.IDGenerator;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.api.WebService;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
-import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Features;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
-
+@ServiceMetadata(
+        description = "Stanford Named Entity Recognizer",
+        requires = "token",
+        produces = {"date", "person", "location", "organization"}
+)
 public class NamedEntityRecognizer extends AbstractStanfordService
 {
    public static final int POOL_SIZE = 1;
@@ -159,7 +163,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       if (classifiedLabels != null)
       {
          IDGenerator id = new IDGenerator();
-         ProcessingStep step = new ProcessingStep();
+         View step = new View();
          String invalidNer = "O";
          for (CoreLabel label : classifiedLabels)
          {
@@ -169,8 +173,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
                Annotation annotation = new Annotation();
                annotation.setLabel(correctCase(ner));
                annotation.setId(id.generate("ne"));
-               int start = (label.beginPosition());
-               int end = (label.endPosition());
+               long start = label.beginPosition();
+               long end = label.endPosition();
                annotation.setStart(start);
                annotation.setEnd(end);
 
@@ -189,7 +193,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
          step.addContains(Annotations.NE, producer, "ner:stanford");
-         container.getSteps().add(step);
+         container.getViews().add(step);
       }
       data = DataFactory.json(container.toJson());
       

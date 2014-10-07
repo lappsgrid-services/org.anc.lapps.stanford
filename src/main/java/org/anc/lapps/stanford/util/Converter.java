@@ -18,14 +18,12 @@ package org.anc.lapps.stanford.util;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.HasOffset;
 import edu.stanford.nlp.util.CoreMap;
-
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.LappsCoreLabel;
 import org.anc.util.IDGenerator;
+import org.lappsgrid.serialization.Annotation;
+import org.lappsgrid.serialization.Container;
+import org.lappsgrid.serialization.View;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 
@@ -58,14 +56,14 @@ public class Converter
       return toContainer(sentences).toPrettyJson();
    }
 
-   public static ProcessingStep getTokens(List<CoreLabel> tokens)
+   public static View getTokens(List<CoreLabel> tokens)
    {
-      ProcessingStep step = new ProcessingStep();
+		View step = new View();
       addTokens(step, tokens);
       return step;
    }
 
-   public static ProcessingStep addTokens(ProcessingStep step, List<CoreLabel> tokens)
+   public static View addTokens(View step, List<CoreLabel> tokens)
    {
       IDGenerator id = new IDGenerator();
       for (CoreLabel token : tokens)
@@ -73,8 +71,8 @@ public class Converter
          Annotation annotation = new Annotation();
          annotation.setLabel(Annotations.TOKEN);
          annotation.setId(id.generate("tok"));
-         int start = (token.beginPosition());
-         int end = (token.endPosition());
+         long start = (token.beginPosition());
+         long end = (token.endPosition());
 //         String original = text.substring(start, end);
          annotation.setStart(start);
          annotation.setEnd(end);
@@ -92,15 +90,15 @@ public class Converter
       return step;
    }
    
-   public static ProcessingStep addTokensWithIds(ProcessingStep step, List<LappsCoreLabel> tokens)
+   public static View addTokensWithIds(View step, List<LappsCoreLabel> tokens)
    {
       for (LappsCoreLabel token : tokens)
       {
          Annotation annotation = new Annotation();
          annotation.setLabel(Annotations.TOKEN);
          annotation.setId(token.id());
-         int start = (token.beginPosition());
-         int end = (token.endPosition());
+         long start = (token.beginPosition());
+         long end = (token.endPosition());
 //         String original = text.substring(start, end);
          annotation.setStart(start);
          annotation.setEnd(end);
@@ -126,7 +124,7 @@ public class Converter
       }
    }
 
-   public static ProcessingStep addSentences(ProcessingStep step, List<CoreMap> sentences)
+   public static View addSentences(View step, List<CoreMap> sentences)
    {
       IDGenerator id = new IDGenerator();
       for (CoreMap sentence : sentences)
@@ -134,8 +132,8 @@ public class Converter
          Annotation sentenceAnnotation = new Annotation();
          sentenceAnnotation.setId(id.generate("s"));
          sentenceAnnotation.setLabel(Annotations.SENTENCE);
-         int start = sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
-         int end = sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
+         long start = sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
+         long end = sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
          sentenceAnnotation.setStart(start);
          sentenceAnnotation.setEnd(end);
          step.addAnnotation(sentenceAnnotation);
@@ -147,7 +145,7 @@ public class Converter
    {
       Container container = new Container();
 //      StringBuilder buffer = new StringBuilder();
-      ProcessingStep step = new ProcessingStep();
+      View step = new View();
       IDGenerator id = new IDGenerator();
 
       for(CoreMap sentence: sentences)
@@ -155,8 +153,8 @@ public class Converter
          Annotation sentenceAnnotation = new Annotation();
          sentenceAnnotation.setId(id.generate("s"));
          sentenceAnnotation.setLabel(Annotations.SENTENCE);
-         int start = sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
-         int end = sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
+         long start = sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
+         long end = sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
          sentenceAnnotation.setStart(start);
          sentenceAnnotation.setEnd(end);
 
@@ -176,8 +174,8 @@ public class Converter
             Annotation tokenAnnotation = new Annotation();
             tokenAnnotation.setLabel(Annotations.TOKEN);
             tokenAnnotation.setId(id.generate("tok"));
-            tokenAnnotation.setStart(token.beginPosition());
-            tokenAnnotation.setEnd(token.endPosition());
+            tokenAnnotation.setStart((long)token.beginPosition());
+            tokenAnnotation.setEnd((long)token.endPosition());
             step.addAnnotation(tokenAnnotation);
 
             Map<String,String> features = tokenAnnotation.getFeatures();
@@ -212,7 +210,7 @@ public class Converter
 //         sentenceAnnotation.setEnd(buffer.length());
 //         buffer.append("\n");
       }
-      container.getSteps().add(step);
+      container.getViews().add(step);
 //      container.setText(buffer.toString());
       return container;
    }

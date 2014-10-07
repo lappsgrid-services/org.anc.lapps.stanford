@@ -16,35 +16,24 @@
  */
 package org.anc.lapps.stanford;
 
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.anc.io.UTF8Reader;
-import org.anc.lapps.serialization.Container;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Discriminator;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.experimental.annotations.CommonMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * @author Keith Suderman
  */
 @CommonMetadata(
-        vendor = "http://www.anc.org",
-        allow = "any",
-        format = "lapps",
-        language = "en"
+	vendor = "http://www.anc.org",
+	license = "apache2",
+	format = "lapps",
+	language = "en"
 )
 public abstract class AbstractStanfordService implements WebService
 {
@@ -60,7 +49,7 @@ public abstract class AbstractStanfordService implements WebService
       {
          // The only IOException not handled by loadMetadata is the one
          // thrown when closing the input stream, and by that point we
-         // are good to go.
+         // are good to go so we ignore it.
       }
    }
 

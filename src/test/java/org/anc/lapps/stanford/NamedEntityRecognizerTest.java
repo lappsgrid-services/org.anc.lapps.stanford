@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.anc.lapps.serialization.Container;
+import org.lappsgrid.serialization.Container;
 import org.anc.resource.ResourceLoader;
 import org.junit.Ignore;
 import org.junit.Test;

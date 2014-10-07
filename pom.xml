@@ -21,11 +21,12 @@
         <lapps.version>2.0.0-SNAPSHOT</lapps.version>
         <lapps.core.version>2.0.0-SNAPSHOT</lapps.core.version>
         <lapps.annotation.version>1.0.0-SNAPSHOT</lapps.annotation.version>
+        <lapps.metadata.version>1.0.0-SNAPSHOT</lapps.metadata.version>
         <stanford.version>3.3.0</stanford.version> <!-- Was 1.3.5 -->
-        <vocabulary.version>0.10.0</vocabulary.version>
+        <vocabulary.version>1.0.0-SNAPSHOT</vocabulary.version>
         <discriminator.version>2.0.0-SNAPSHOT</discriminator.version>
-        <serialization.version>0.13.0</serialization.version>
-        <anc.commons.version>3.4.0</anc.commons.version>
+        <serialization.version>1.0.0-SNAPSHOT</serialization.version>
+        <anc.commons.version>3.5.0</anc.commons.version>
     </properties>
     <build>
         <finalName>StanfordServices#${project.version}</finalName>
@@ -37,6 +38,20 @@
                         <annotationProcessor>org.lappsgrid.experimental.annotation.processing.MetadataProcessor</annotationProcessor>
                     </annotationProcessors>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.lappsgrid</groupId>
+                        <artifactId>discriminator</artifactId>
+                        <version>2.0.0-SNAPSHOT</version>
+                    </dependency>
+                <!--
+                    <dependency>
+                        <groupId>org.lappsgrid.experimental</groupId>
+                        <artifactId>metadata</artifactId>
+                        <version>1.0.0-SNAPSHOT</version>
+                    </dependency>
+                -->
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -64,6 +79,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/main/resources/metadata</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -71,14 +96,20 @@
         <dependency>
             <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>annotations</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${lapps.annotation.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>annotation-processor</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${lapps.annotation.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.lappsgrid.experimental</groupId>
+            <artifactId>metadata</artifactId>
+            <version>${lapps.metadata.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
@@ -111,7 +142,7 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>org.anc.lapps</groupId>
+            <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>serialization</artifactId>
             <version>${serialization.version}</version>
         </dependency>

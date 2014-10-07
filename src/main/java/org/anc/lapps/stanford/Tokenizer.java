@@ -16,26 +16,29 @@
  */
 package org.anc.lapps.stanford;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
 import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
-import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.Container;
+import org.lappsgrid.serialization.View;
 import org.lappsgrid.vocabulary.Annotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.PTBTokenizer;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
+@ServiceMetadata(
+        description = "Stanford Tokenizer",
+        produces = "token"
+)
 public class Tokenizer extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
@@ -85,14 +88,14 @@ public class Tokenizer extends AbstractStanfordService
       {
          return DataFactory.error("PTBTokenizer returned no tokens.");
       }
-      
-      ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
+
+		View view = Converter.addTokens(new View(), tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      step.addContains(Annotations.TOKEN, producer, "stanford");
+      view.addContains(Annotations.TOKEN, producer, "stanford");
 //      Map<String,String> metadata = step.getMetadata();
 //      metadata.put(Metadata.PRODUCED_BY, name);
 //      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
-      container.getSteps().add(step);
+      container.getViews().add(view);
       data = DataFactory.json(container.toJson());
       
       return data;

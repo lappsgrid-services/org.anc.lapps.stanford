@@ -1,9 +1,6 @@
 package org.anc.lapps.stanford;
 
 import org.anc.io.FileUtils;
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.resource.ResourceLoader;
 import org.junit.*;
 import org.lappsgrid.api.Data;
@@ -11,6 +8,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
 import org.lappsgrid.discriminator.Uri;
+import org.lappsgrid.serialization.Container;
 
 import java.io.IOException;
 

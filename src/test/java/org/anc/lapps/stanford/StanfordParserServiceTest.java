@@ -83,7 +83,7 @@ public class StanfordParserServiceTest
 
    protected Data test(String annotators) throws IOException
    {
-      WebService service = new StanfordParserService();
+      WebService service = null; //new StanfordParserService();
       Data parameter = new Data(Uri.TEXT, annotators);
       Data result = service.configure(parameter);
       long type = DiscriminatorRegistry.get(result.getDiscriminator());

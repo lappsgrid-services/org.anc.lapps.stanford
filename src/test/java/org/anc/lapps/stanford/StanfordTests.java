@@ -1,9 +1,7 @@
 package org.anc.lapps.stanford;
 
 import org.anc.io.FileUtils;
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
+import org.lappsgrid.serialization.*;
 import org.anc.resource.ResourceLoader;
 import org.junit.After;
 import org.junit.Before;
@@ -12,8 +10,10 @@ import org.junit.Test;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.Discriminator;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.vocabulary.Annotations;
 
 import java.io.IOException;
@@ -59,14 +59,14 @@ public class StanfordTests
    protected List<String> collect(Container container, String annotationType)
    {
       List<String> list = new ArrayList<String>();
-      for (ProcessingStep step : container.getSteps())
+      for (View step : container.getViews())
       {
          for (Annotation annotation : step.getAnnotations())
          {
             if (annotationType.equals(annotation.getLabel()))
             {
-               int start = (int) annotation.getStart();
-               int end = (int) annotation.getEnd();
+               int start = annotation.getStart().intValue();
+               int end = annotation.getEnd().intValue();
                String sentence = container.getText().substring(start, end);
                list.add(sentence);
             }
@@ -98,6 +98,19 @@ public class StanfordTests
          ++count;
          System.out.printf("%-2d: %s\n", count, sentence);
       }
+   }
+
+   @Test
+   public void testMetadata()
+   {
+      WebService service = new Tokenizer();
+      Data data = service.getMetadata();
+      assertTrue("Data is null.", data != null);
+      Discriminator discriminator = DiscriminatorRegistry.getByUri(data.getDiscriminator());
+      assertTrue(data.getPayload(), discriminator.getId() != Types.ERROR);
+      assertTrue("Unexpected discriminator: " + discriminator.getName(), discriminator.getId() == Types.META);
+      ServiceMetadata metadata = new ServiceMetadata(data.getPayload());
+      assertTrue("http://www.anc.org".equals(metadata.getVendor()));
    }
 
    @Ignore

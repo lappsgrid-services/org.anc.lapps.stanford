@@ -20,26 +20,28 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
 import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.api.Data;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.Container;
+import org.lappsgrid.serialization.View;
 import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Keith Suderman
  */
+@ServiceMetadata(
+        description = "Stanford Sentence Splitter",
+        produces = "sentence"
+)
 public class SentenceSplitter extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
@@ -53,7 +55,7 @@ public class SentenceSplitter extends AbstractStanfordService
    {
       super(SentenceSplitter.class);
       Properties properties = new Properties();
-      properties.setProperty("annotators", "tokenizer, ssplit");
+      properties.setProperty("annotators", "tokenize, ssplit");
 //      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
 //      for (int i = 0; i < POOL_SIZE; ++i)
 //      {
@@ -100,11 +102,11 @@ public class SentenceSplitter extends AbstractStanfordService
 
          service.annotate(document);
          List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-         ProcessingStep step = Converter.addSentences(new ProcessingStep(), sentences);
+         View step = Converter.addSentences(new View(), sentences);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
          step.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
          step.addContains(Annotations.SENTENCE, producer, "chunk:sentence");
-         container.getSteps().add(step);
+         container.getViews().add(step);
          data = DataFactory.json(container.toJson());
 //      }
 //      catch (InterruptedException e)

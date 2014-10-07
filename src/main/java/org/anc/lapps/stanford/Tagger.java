@@ -16,14 +16,8 @@
  */
 package org.anc.lapps.stanford;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import org.anc.lapps.serialization.*;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
@@ -33,15 +27,31 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.DiscriminatorRegistry;
 import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.Annotation;
+import org.lappsgrid.serialization.Container;
+import org.lappsgrid.serialization.View;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+@ServiceMetadata(
+        description = "Stanford Part of Speech Tagger",
+        requires = {"token"},
+        produces = {"pos"}
+)
 public class Tagger extends AbstractStanfordService
 {
    /** The number of processing threads to create. */
@@ -91,8 +101,8 @@ public class Tagger extends AbstractStanfordService
 
       Container container = new Container(input.getPayload());
       Data data = null;
-      List<ProcessingStep> steps = container.getSteps();
-      ProcessingStep tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
+      List<View> steps = container.getViews();
+		View tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
 
       if (tokenStep == null)
       {
@@ -135,10 +145,10 @@ public class Tagger extends AbstractStanfordService
          }
       }
 
-      ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
+		View step = Converter.addTokens(new View(), labels);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       step.addContains(Features.Token.PART_OF_SPEECH, producer, Contents.TagSets.PENN);
-      container.getSteps().add(step);
+      container.getViews().add(step);
       data = DataFactory.json(container.toJson());
       return data;
    }
