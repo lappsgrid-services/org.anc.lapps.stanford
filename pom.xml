@@ -146,12 +146,12 @@
             <artifactId>util</artifactId>
             <version>1.0.0</version>
         </dependency>
+        -->
         <dependency>
             <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>serialization</artifactId>
             <version>${serialization.version}</version>
         </dependency>
-        -->
         <dependency>
             <groupId>org.anc.stanford.corenlp</groupId>
             <artifactId>models</artifactId>
