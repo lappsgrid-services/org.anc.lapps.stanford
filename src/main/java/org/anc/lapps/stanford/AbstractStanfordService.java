@@ -18,10 +18,12 @@ package org.anc.lapps.stanford;
 
 import org.anc.io.UTF8Reader;
 import org.anc.resource.ResourceLoader;
-import org.lappsgrid.api.Data;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.*;
+import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.CommonMetadata;
+import org.lappsgrid.serialization.Error;
+import org.lappsgrid.serialization.Serializer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +39,7 @@ import java.io.InputStream;
 )
 public abstract class AbstractStanfordService implements WebService
 {
-   protected Data metadata;
+   protected String metadata;
 
    public AbstractStanfordService(Class<?> serviceClass)
    {
@@ -53,21 +55,37 @@ public abstract class AbstractStanfordService implements WebService
       }
    }
 
+   protected boolean isError(String discriminator)
+   {
+      return Constants.Uri.ERROR.equals(discriminator);
+   }
+
+   protected String createError(String message)
+   {
+      return Serializer.toPrettyJson(new Error(message));
+   }
+
    private void loadMetadata(Class<?> serviceClass) throws IOException
    {
       ClassLoader loader = ResourceLoader.getClassLoader();
       String resourceName = "metadata/" + serviceClass.getName() + ".json";
       InputStream inputStream = loader.getResourceAsStream(resourceName);
+      if (inputStream == null)
+      {
+         throw new IOException("Unable to load resource" + resourceName);
+      }
+
       UTF8Reader reader = null;
       try
       {
          reader = new UTF8Reader(inputStream);
-         String json = reader.readString();
-         metadata = DataFactory.meta(json);
+         metadata = reader.readString();
+//         metadata = DataFactory.meta(json);
       }
       catch (IOException e)
       {
-         metadata = DataFactory.error("Unable to load metadata from " + resourceName, e);
+//         metadata = DataFactory.error("Unable to load metadata from " + resourceName, e);
+         metadata = Serializer.toPrettyJson(new Error("Unable to loade metadata from " + resourceName));
          throw e;
       }
       finally
@@ -80,7 +98,7 @@ public abstract class AbstractStanfordService implements WebService
    }
 
 
-   public Data getMetadata()
+   public String getMetadata()
    {
       return metadata;
    }

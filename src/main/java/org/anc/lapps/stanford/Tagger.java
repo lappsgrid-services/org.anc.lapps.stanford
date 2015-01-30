@@ -21,16 +21,13 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import org.anc.lapps.stanford.util.Converter;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
-import org.lappsgrid.api.Data;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
-import org.lappsgrid.serialization.Annotation;
-import org.lappsgrid.serialization.Container;
-import org.lappsgrid.serialization.View;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Contents;
 import org.lappsgrid.vocabulary.Features;
@@ -42,7 +39,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -72,12 +71,12 @@ public class Tagger extends AbstractStanfordService
       pool = new ArrayBlockingQueue<MaxentTagger>(POOL_SIZE);
       for (int i = 0; i < POOL_SIZE; ++i)
       {
-         pool.add(new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH));
+         pool.add(new MaxentTagger(Konstants.PATH.TAGGER_MODEL_PATH));
       }
    }
    
    @Override
-   public Data execute(Data input)
+   public String execute(String input)
    {
       logger.info("Executing Stanford stand-alone Tagger.");
 //      logger.info("Tagger is using model english-bidirectional-distsim.");
@@ -86,28 +85,47 @@ public class Tagger extends AbstractStanfordService
 //      {
 //         return input;
 //      }
-      long discriminator = DiscriminatorRegistry.get(input.getDiscriminator());
-      if (discriminator == Types.ERROR)
+
+      Map<String,String> map = Serializer.parse(input, HashMap.class);
+      String discriminator = map.get("discriminator");
+      if (discriminator == null)
       {
-         return input;
+         return createError(Messages.MISSING_DISCRIMINATOR);
       }
-      if (discriminator != Types.JSON)
+      String payload = map.get("payload");
+      if (payload == null)
       {
-         String name = DiscriminatorRegistry.get(discriminator);
-         String message = "Invalid input type. Expected JSON but found " + name;
-         logger.warn(message);
-         return DataFactory.error(message);
+         return createError(Messages.MISSING_PAYLOAD);
       }
 
-      Container container = new Container(input.getPayload());
-      Data data = null;
+      Container container = null;
+      Data<Container> data = null;
+      String error = null;
+
+      switch(discriminator)
+      {
+         case Constants.Uri.ERROR:
+            error = input;
+            break;
+         case Constants.Uri.JSON: // fall through
+         case Constants.Uri.JSON_LD:
+            container = Serializer.parse(payload, Container.class);
+            break;
+         default:
+            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+      }
+      if (error != null)
+      {
+         return error;
+      }
+
       List<View> steps = container.getViews();
 		View tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
 
       if (tokenStep == null)
       {
          logger.warn("No tokens were found in any processing step");
-         return DataFactory.error("Unable to process input; no tokens found.");
+         return createError("Unable to process input; no tokens found.");
       }
       
       List<Annotation> annotations = tokenStep.getAnnotations();
@@ -125,7 +143,7 @@ public class Tagger extends AbstractStanfordService
          if (tagger == null)
          {
             logger.warn("The Stanford tagger was unable to respond in a timely fashion.");
-            return DataFactory.error(Messages.BUSY);
+            return createError(Messages.BUSY);
          }
          tagger.tagCoreLabels(labels);
       }
@@ -135,7 +153,7 @@ public class Tagger extends AbstractStanfordService
          PrintWriter writer = new PrintWriter(stringWriter);
          writer.println("Unable to run the stanford tagger.");
          e.printStackTrace(writer);
-         return DataFactory.error(stringWriter.toString());
+         return createError(stringWriter.toString());
       }
       finally
       {
@@ -149,50 +167,39 @@ public class Tagger extends AbstractStanfordService
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       step.addContains(Features.Token.PART_OF_SPEECH, producer, Contents.TagSets.PENN);
       container.getViews().add(step);
-      data = DataFactory.json(container.toJson());
-      return data;
+      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setPayload(container);
+      return Serializer.toJson(data);
    }
    
-   @Override
-   public Data configure(Data arg0)
-   {
-      return DataFactory.error("Unsupported operation.");
-   }
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 
-   protected Container createContainer(Data input)
-   {
-      Container container = null;
-      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
-      if (inputType == Types.ERROR)
-      {
-         return null;
-      }
-      else if (inputType == Types.TEXT)
-      {
-         container = new Container();
-         container.setText(input.getPayload());
-      }
-      else if (inputType == Types.JSON)
-      {
-         container = new Container(input.getPayload());
-      }
-      return container;
-   }
 
    public static void main(String[] args) throws IOException, LappsException
    {
       WebService tokenizer = new Tokenizer();
       String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
-      Data tokenizerInput = DataFactory.text(inputText);
-      Data tokenizerResult = tokenizer.execute(tokenizerInput);
-      
+      Data<String> data = new Data<String>();
+      data.setDiscriminator(Constants.Uri.TEXT);
+      data.setPayload(inputText);
+      String tokenizerInput = Serializer.toJson(data);
+      String tokenizerResult = tokenizer.execute(tokenizerInput);
+
+//      Map<String,String> map = Serializer.parse(tokenizerResult, HashMap.class);
+
       WebService service = new Tagger();
-      Data result = service.execute(tokenizerResult);
-      Container container = new Container(result.getPayload());
-      
+      String result = service.execute(tokenizerResult);
+//      Container container = new Container();
+      Map<String,String> map = Serializer.parse(result, HashMap.class);
+      System.out.println(map.get("discriminator"));
+      Container container = Serializer.parse(map.get("payload"), Container.class);
       File output = new File("src/main/resources/blog-jet-lag_tagged.json");
       PrintWriter out = new PrintWriter(output);
-      out.println(container.toJson());
+      out.println(Serializer.toPrettyJson(container));
       out.close();
    }
 }

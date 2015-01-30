@@ -23,14 +23,12 @@ import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.util.IDGenerator;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.*;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
-import org.lappsgrid.serialization.Annotation;
-import org.lappsgrid.serialization.Container;
-import org.lappsgrid.serialization.View;
+import org.lappsgrid.serialization.*;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
@@ -38,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -59,7 +58,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
    private static final Logger logger = LoggerFactory.getLogger(NamedEntityRecognizer.class);
 
-   private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
+   private static final String classifierPath = Konstants.PATH.NER_MODEL_PATH;
 
    //protected AbstractSequenceClassifier classifier;
    protected BlockingQueue<AbstractSequenceClassifier> pool;
@@ -92,7 +91,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
    }
    
    @Override
-   public Data execute(Data input)
+   public String execute(String input)
    {
       // A savedException indicates there was a problem creating the CRFClassifier
       // object.
@@ -106,25 +105,43 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             savedException.printStackTrace(writer);
             exceptionMessage = stringWriter.toString();
          }
-         return DataFactory.error(exceptionMessage);
+         return createError(exceptionMessage);
       }
 
-      long type = DiscriminatorRegistry.get(input.getDiscriminator());
-      if (type == Types.ERROR)
+      Map<String,String> map = Serializer.parse(input, HashMap.class);
+      String discriminator = map.get("discriminator");
+      if (discriminator == null)
       {
-         return input;
+         return createError(Messages.MISSING_DISCRIMINATOR);
       }
-      if (type != Types.JSON)
+      String payload = map.get("payload");
+      if (payload == null)
       {
-         String name = DiscriminatorRegistry.get(type);
-         String message = "Invalid input type. Expected JSON but found " + name;
-         logger.warn(message);
-         return DataFactory.error(message);
+         return createError(Messages.MISSING_PAYLOAD);
       }
 
+      String error = null;
+      switch (discriminator)
+      {
+         case Constants.Uri.ERROR:
+            error = input;
+            break;
+         case Constants.Uri.JSON: // fall through.
+         case Constants.Uri.JSON_LD:
+            break;
+         default:
+            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            break;
+      }
+
+      if (error != null)
+      {
+         return error;
+      }
+
+      Container container = Serializer.parse(payload, Container.class);
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
-      Container container = new Container(input.getPayload());
-      Data data = null;
+      Data<Container> data = null;
       
       List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
       
@@ -132,7 +149,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       {
          String message = "Unable to initialize a list of Stanford CoreLabels.";
          logger.warn(message);
-         return DataFactory.error(message);
+         return createError(message);
       }
 
       AbstractSequenceClassifier classifier = null;
@@ -144,7 +161,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          if (classifier == null)
          {
             logger.warn(Messages.BUSY);
-            return DataFactory.error(Messages.BUSY);
+            return createError(Messages.BUSY);
          }
 
          classifiedLabels = classifier.classify(labels);
@@ -195,9 +212,10 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          step.addContains(Annotations.NE, producer, "ner:stanford");
          container.getViews().add(step);
       }
-      data = DataFactory.json(container.toJson());
+      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setPayload(container);
       
-      return data;
+      return Serializer.toJson(data);
    }
 
    private String correctCase(String item)
@@ -215,9 +233,9 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       }
    }
 
-   @Override
-   public Data configure(Data arg0)
-   {
-      return DataFactory.error("Unsupported operation.");
-   }
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 }

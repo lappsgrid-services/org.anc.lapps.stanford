@@ -17,7 +17,7 @@
 package org.anc.lapps.stanford;
 
 import edu.stanford.nlp.ling.CoreLabel;
-import org.lappsgrid.serialization.Annotation;
+import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 

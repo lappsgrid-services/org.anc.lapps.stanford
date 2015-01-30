@@ -21,9 +21,8 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.anc.lapps.stanford.LappsCoreLabel;
 import org.anc.util.IDGenerator;
-import org.lappsgrid.serialization.Annotation;
-import org.lappsgrid.serialization.Container;
-import org.lappsgrid.serialization.View;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 
@@ -48,12 +47,12 @@ public class Converter
 
    public static String toRawJson(List<CoreMap> sentences)
    {
-      return toContainer(sentences).toJson();
+      return Serializer.toJson(toContainer(sentences));
    }
 
    public static String toPrettyJson(List<CoreMap> sentences)
    {
-      return toContainer(sentences).toPrettyJson();
+      return Serializer.toPrettyJson(toContainer(sentences));
    }
 
    public static View getTokens(List<CoreLabel> tokens)

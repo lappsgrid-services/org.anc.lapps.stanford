@@ -20,20 +20,21 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import org.anc.lapps.stanford.util.Converter;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.DiscriminatorRegistry;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
-import org.lappsgrid.serialization.Container;
-import org.lappsgrid.serialization.View;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.vocabulary.Annotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ServiceMetadata(
         description = "Stanford Tokenizer",
@@ -49,34 +50,46 @@ public class Tokenizer extends AbstractStanfordService
    }
 
    @Override
-   public Data execute(Data input)
+   public String execute(String input)
    {
       logger.info("Executing Stanford stand-alone tokenizer");
       Container container = null;
-      long type = DiscriminatorRegistry.get(input.getDiscriminator());
-      if (type == Types.ERROR)
+      Map<String,Object> map = Serializer.parse(input, HashMap.class);
+
+      Object object = map.get("discriminator");
+      if (object == null)
+      {
+         return createError(Messages.MISSING_DISCRIMINATOR);
+      }
+      String discriminator = object.toString();
+      if (isError(discriminator))
       {
          return input;
       }
-      else if (type == Types.TEXT)
+
+      Object payload = map.get("payload");
+      if (payload == null)
       {
-         container = new Container(false);
-         container.setText(input.getPayload());
+         return createError(Messages.MISSING_PAYLOAD);
       }
-      else if (type == Types.JSON)
+      String text = payload.toString();
+      String error = null;
+      switch(discriminator) {
+         case Constants.Uri.ERROR:
+            error = input;
+            break;
+         case Constants.Uri.TEXT:
+            container = new Container();
+            container.setText(text);
+            break;
+         default:
+            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+      }
+      if (error != null)
       {
-         container = new Container(input.getPayload());
-      }
-      else {
-         String typeName = DiscriminatorRegistry.get(type);
-         String message = "Unknown discriminator type. Expected text or json. Found " + typeName;
-         logger.warn(message);
-         return DataFactory.error(message);
+         return error;
       }
 
-      Data data = null;
-      String text = container.getText();
-      
       List<CoreLabel> tokens = new ArrayList<CoreLabel>();
       PTBTokenizer ptbt = new PTBTokenizer(new StringReader(text), new CoreLabelTokenFactory(), "ptb3Escaping=false");
       for (CoreLabel label; ptbt.hasNext(); )
@@ -86,7 +99,7 @@ public class Tokenizer extends AbstractStanfordService
       }
       if (tokens.size() == 0)
       {
-         return DataFactory.error("PTBTokenizer returned no tokens.");
+         return createError("PTBTokenizer returned no tokens.");
       }
 
 		View view = Converter.addTokens(new View(), tokens);
@@ -96,34 +109,36 @@ public class Tokenizer extends AbstractStanfordService
 //      metadata.put(Metadata.PRODUCED_BY, name);
 //      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
       container.getViews().add(view);
-      data = DataFactory.json(container.toJson());
-      
-      return data;
+      map = null;
+      Data<Container> data = new Data<Container>();
+      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setPayload(container);
+      return Serializer.toJson(data);
    }
    
-   protected Container createContainer(Data input)
-   {
-      Container container = null;
-      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
-      if (inputType == Types.ERROR)
-      {
-         return null;
-      }
-      else if (inputType == Types.TEXT)
-      {
-         container = new Container();
-         container.setText(input.getPayload());
-      }
-      else if (inputType == Types.JSON)
-      {
-         container = new Container(input.getPayload());
-      }
-      return container;
-   }
+//   protected Container createContainer(Data input)
+//   {
+//      Container container = null;
+//      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
+//      if (inputType == Types.ERROR)
+//      {
+//         return null;
+//      }
+//      else if (inputType == Types.TEXT)
+//      {
+//         container = new Container();
+//         container.setText(input.getPayload());
+//      }
+//      else if (inputType == Types.JSON)
+//      {
+//         container = new Container(input.getPayload());
+//      }
+//      return container;
+//   }
 
-   @Override
-   public Data configure(Data arg0)
-   {
-      return DataFactory.error("Unsupported operation.");
-   }
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 }
