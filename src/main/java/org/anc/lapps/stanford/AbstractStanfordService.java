@@ -22,6 +22,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.*;
 import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.CommonMetadata;
+import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Error;
 import org.lappsgrid.serialization.Serializer;
 
@@ -79,7 +80,9 @@ public abstract class AbstractStanfordService implements WebService
       try
       {
          reader = new UTF8Reader(inputStream);
-         metadata = reader.readString();
+         String content = reader.readString();
+         Data<String> data = new Data<>(Constants.Uri.META, content);
+         metadata = data.asJson();
 //         metadata = DataFactory.meta(json);
       }
       catch (IOException e)

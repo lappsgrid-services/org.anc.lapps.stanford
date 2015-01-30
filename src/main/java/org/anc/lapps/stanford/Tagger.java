@@ -23,6 +23,7 @@ import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
+import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
@@ -86,48 +87,59 @@ public class Tagger extends AbstractStanfordService
 //         return input;
 //      }
 
-      Map<String,String> map = Serializer.parse(input, HashMap.class);
-      String discriminator = map.get("discriminator");
+      Data<Map> data = Serializer.parse(input, Data.class);
+      if (data == null) {
+         return DataFactory.error("Unable to parse input.");
+      }
+
+      String discriminator = data.getDiscriminator();
       if (discriminator == null)
       {
          return createError(Messages.MISSING_DISCRIMINATOR);
       }
-      String payload = map.get("payload");
-      if (payload == null)
-      {
-         return createError(Messages.MISSING_PAYLOAD);
-      }
 
       Container container = null;
-      Data<Container> data = null;
-      String error = null;
+      String json = null;
 
       switch(discriminator)
       {
          case Constants.Uri.ERROR:
-            error = input;
+            json = input;
+            break;
+         case Constants.Uri.GETMETADATA:
+            json = super.getMetadata();
             break;
          case Constants.Uri.JSON: // fall through
          case Constants.Uri.JSON_LD:
-            container = Serializer.parse(payload, Container.class);
+            container = new Container(data.getPayload());
+            if (container == null)
+            {
+               return createError(Messages.MISSING_PAYLOAD);
+            }
             break;
          default:
-            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
       }
-      if (error != null)
+      if (json != null)
       {
-         return error;
+         return json;
       }
 
-      List<View> steps = container.getViews();
-		View tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
-
-      if (tokenStep == null)
+//      List<View> steps = container.getViews();
+//		View tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
+//
+//      if (tokenStep == null)
+//      {
+//         logger.warn("No tokens were found in any processing step");
+//         return createError("Unable to process input; no tokens found.");
+//      }
+      List<View> views = container.findViewsThatContain(Constants.Uri.TOKEN);
+      if (views == null || views.size() == 0)
       {
-         logger.warn("No tokens were found in any processing step");
-         return createError("Unable to process input; no tokens found.");
+         logger.warn("No tokens were found in any views.");
+         return createError("Unable to process input: no tokens found");
       }
-      
+      View tokenStep = views.get(0);
       List<Annotation> annotations = tokenStep.getAnnotations();
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       for (Annotation a : annotations)
@@ -167,9 +179,11 @@ public class Tagger extends AbstractStanfordService
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       step.addContains(Features.Token.PART_OF_SPEECH, producer, Contents.TagSets.PENN);
       container.getViews().add(step);
-      data.setDiscriminator(Constants.Uri.JSON_LD);
-      data.setPayload(container);
-      return Serializer.toJson(data);
+
+//      data.setDiscriminator(Constants.Uri.JSON_LD);
+//      data.setPayload(container);
+//      return data.asJson();
+      return new Data<Container>(Constants.Uri.JSON_LD, container).asJson();
    }
    
 //   @Override

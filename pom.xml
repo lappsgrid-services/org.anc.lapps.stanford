@@ -123,13 +123,11 @@
             <artifactId>api</artifactId>
             <version>${lapps.api.version}</version>
         </dependency>
-        <!--
         <dependency>
-            <groupId>org.lappsgrid</groupId>
+            <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>core</artifactId>
             <version>${lapps.core.version}</version>
         </dependency>
-        -->
         <dependency>
             <groupId>org.lappsgrid.experimental</groupId>
             <artifactId>discriminator</artifactId>

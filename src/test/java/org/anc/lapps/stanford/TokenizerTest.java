@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.lappsgrid.discriminator.Constants;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
@@ -55,8 +56,8 @@ public class TokenizerTest
       assertNotNull("Null result.", result);
       Object payload = result.getPayload();
       assertNotNull("Null payload.", payload);
-      assertFalse(payload.toString(), isError(result));
-      assertTrue("Expected JSON LD. Found " + result.getDiscriminator(), isa(result, Constants.Uri.JSON_LD));
+      assertFalse(payload.toString(), TestUtils.isError(result));
+      assertTrue("Expected JSON LD. Found " + result.getDiscriminator(), TestUtils.isa(result, Constants.Uri.JSON_LD));
       Container container = new Container((Map)payload);
       assertNotNull("No text in container", container.getText());
       int size = container.getViews().size();
@@ -83,32 +84,50 @@ public class TokenizerTest
 //      System.out.println(container.toPrettyJson());
    }
 
+   @Test
    public void testMetadata()
    {
-      WebService tokenzier = new Tokenizer();
+      WebService tokenizer = new Tokenizer();
       Data<Void> command = new Data<Void>(Constants.Uri.GETMETADATA);
-
-      String result = tokenzier.execute(Serializer.toJson(command));
+      String result = tokenizer.execute(command.asJson());
+      assertNotNull("Tokenizer did not return metadata", result);
+      Data<Object> data = Serializer.parse(result, Data.class);
+      assertNotNull("Unable to parse metadata.", data);
+      assertFalse(data.getPayload().toString(), TestUtils.isError(data));
+      assertTrue("Wrong data type returned", TestUtils.isa(data, Constants.Uri.META));
+      ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
+      assertNotNull("Unable to parse metadata.", metadata);
+      TestUtils.check(Tokenizer.class.getName(), metadata.getName());
+      TestUtils.check("http://www.anc.org", metadata.getVendor());
+      TestUtils.check(Version.getVersion(), metadata.getVersion());
 
    }
 
-   private boolean isError(Data<?> data)
-   {
-      return isError(data.getDiscriminator());
-   }
-
-   private boolean isError(String url)
-   {
-      return Constants.Uri.ERROR.equals(url);
-   }
-
-   private boolean isa(Data<?> data, String type)
-   {
-      return isa(data.getDiscriminator(), type);
-   }
-
-   private boolean isa(String candidate, String type)
-   {
-      return type.equals(candidate);
-   }
+//   private void check(String expected, String actual)
+//   {
+//      if (!actual.equals(expected))
+//      {
+//         String message = String.format("Expected: %s Found %s", expected, actual);
+//         fail(message);
+//      }
+//   }
+//   private boolean isError(Data<?> data)
+//   {
+//      return isError(data.getDiscriminator());
+//   }
+//
+//   private boolean isError(String url)
+//   {
+//      return Constants.Uri.ERROR.equals(url);
+//   }
+//
+//   private boolean isa(Data<?> data, String type)
+//   {
+//      return isa(data.getDiscriminator(), type);
+//   }
+//
+//   private boolean isa(String candidate, String type)
+//   {
+//      return type.equals(candidate);
+//   }
 }

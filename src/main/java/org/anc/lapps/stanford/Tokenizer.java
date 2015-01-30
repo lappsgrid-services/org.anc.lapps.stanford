@@ -67,27 +67,31 @@ public class Tokenizer extends AbstractStanfordService
          return input;
       }
 
-      Object payload = map.get("payload");
-      if (payload == null)
-      {
-         return createError(Messages.MISSING_PAYLOAD);
-      }
-      String text = payload.toString();
-      String error = null;
+      String text = null;
+      String json = null;
       switch(discriminator) {
          case Constants.Uri.ERROR:
-            error = input;
+            json = input;
             break;
          case Constants.Uri.TEXT:
+            Object payload = map.get("payload");
+            if (payload == null)
+            {
+               return createError(Messages.MISSING_PAYLOAD);
+            }
+            text = payload.toString();
             container = new Container();
             container.setText(text);
             break;
+         case Constants.Uri.GETMETADATA:
+            json = super.getMetadata();
+            break;
          default:
-            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
       }
-      if (error != null)
+      if (json != null)
       {
-         return error;
+         return json;
       }
 
       List<CoreLabel> tokens = new ArrayList<CoreLabel>();
