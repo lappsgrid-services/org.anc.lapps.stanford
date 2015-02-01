@@ -108,23 +108,26 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return createError(exceptionMessage);
       }
 
-      Map<String,String> map = Serializer.parse(input, HashMap.class);
-      String discriminator = map.get("discriminator");
-      if (discriminator == null)
+      Data data = Serializer.parse(input, Data.class);
+      if (data == null)
       {
-         return createError(Messages.MISSING_DISCRIMINATOR);
+         return createError("Unable to parse input.");
       }
-      String payload = map.get("payload");
-      if (payload == null)
-      {
-         return createError(Messages.MISSING_PAYLOAD);
-      }
+//      String payload = map.get("payload");
+//      if (payload == null)
+//      {
+//         return createError(Messages.MISSING_PAYLOAD);
+//      }
 
+      String discriminator = data.getDiscriminator();
       String error = null;
       switch (discriminator)
       {
          case Constants.Uri.ERROR:
             error = input;
+            break;
+         case Constants.Uri.GETMETADATA:
+            error = super.getMetadata();
             break;
          case Constants.Uri.JSON: // fall through.
          case Constants.Uri.JSON_LD:
@@ -139,10 +142,9 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return error;
       }
 
-      Container container = Serializer.parse(payload, Container.class);
+      Container container = Serializer.parse(data.getPayload().toString(), Container.class);
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
-      Data<Container> data = null;
-      
+
       List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
       
       if (labels == null)

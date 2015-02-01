@@ -46,9 +46,6 @@ public class SentenceSplitter extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(SentenceSplitter.class);
 
-//   public static final long DELAY = 5;
-//   public static final TimeUnit UNIT = TimeUnit.SECONDS;
-
    private StanfordCoreNLP service;
 
    public SentenceSplitter()

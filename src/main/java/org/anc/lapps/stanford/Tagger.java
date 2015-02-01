@@ -177,7 +177,7 @@ public class Tagger extends AbstractStanfordService
 
 		View step = Converter.addTokens(new View(), labels);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      step.addContains(Features.Token.PART_OF_SPEECH, producer, Contents.TagSets.PENN);
+      step.addContains(Constants.Uri.POS, producer, Contents.TagSets.PENN);
       container.getViews().add(step);
 
 //      data.setDiscriminator(Constants.Uri.JSON_LD);

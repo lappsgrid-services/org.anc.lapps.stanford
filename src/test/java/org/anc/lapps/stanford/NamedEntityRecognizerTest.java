@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 //import org.lappsgrid.discriminator.*;
+import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
@@ -21,33 +22,43 @@ import static org.junit.Assert.assertTrue;
 public class NamedEntityRecognizerTest
 {
 
-   @Ignore
+   @Test
    public void testSANamedEntityRecognizer() throws IOException, LappsException
    {
       String text = ResourceLoader.loadString("Bartok.txt");
-      
-      WebService tokenizer = new Tokenizer();
-      Data<String> data = new Data<>(Uri.TEXT, null, text);
-      data.setDiscriminator(Uri.TEXT);
-      data.setPayload(text);
-      Data<String> input = new Data<>(Uri.TEXT, null, text);
-      String json = Serializer.toJson(input);
-      String tokenized = tokenizer.execute(json);
-      
-      WebService tagger = new Tagger();
-      String tagged = tagger.execute(tokenized);
-      
-      WebService ner = new NamedEntityRecognizer();
-      String result = ner.execute(tagged);
-      Map<String,String> map = Serializer.parse(result, HashMap.class);
-      String discriminator = map.get("discriminator");
-      String payload = map.get("payload");
+      String input = DataFactory.text(text);
 
-      assertFalse(payload, Uri.ERROR.equals(discriminator));
-      assertTrue("Expected JSON", Uri.JSON.equals(discriminator));
-//      System.out.println(payload);
-      Container container = Serializer.parse(payload, Container.class);
-      System.out.println(Serializer.toPrettyJson(container));
+      WebService tokenizer = new Tokenizer();
+      WebService tagger = new Tagger();
+      WebService ner = new NamedEntityRecognizer();
+
+      String json = tokenizer.execute(input);
+      json = tagger.execute(json);
+      json = ner.execute(json);
+      Data result = Serializer.parse(json, Data.class);
+      assertFalse(result.getPayload().toString(), TestUtils.isError(result));
+
+//      Data<String> data = new Data<>(Uri.TEXT, null, text);
+//      data.setDiscriminator(Uri.TEXT);
+//      data.setPayload(text);
+//      Data<String> input = new Data<>(Uri.TEXT, null, text);
+//      String json = Serializer.toJson(input);
+//      String tokenized = tokenizer.execute(json);
+//
+//      WebService tagger = new Tagger();
+//      String tagged = tagger.execute(tokenized);
+//
+//      WebService ner = new NamedEntityRecognizer();
+//      String result = ner.execute(tagged);
+//      Map<String,String> map = Serializer.parse(result, HashMap.class);
+//      String discriminator = map.get("discriminator");
+//      String payload = map.get("payload");
+//
+//      assertFalse(payload, Uri.ERROR.equals(discriminator));
+//      assertTrue("Expected JSON", Uri.JSON.equals(discriminator));
+////      System.out.println(payload);
+//      Container container = Serializer.parse(payload, Container.class);
+//      System.out.println(Serializer.toPrettyJson(container));
    }
 
 //   @Ignore
