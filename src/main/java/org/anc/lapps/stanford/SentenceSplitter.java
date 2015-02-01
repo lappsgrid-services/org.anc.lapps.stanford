@@ -40,7 +40,8 @@ import java.util.Properties;
  */
 @ServiceMetadata(
         description = "Stanford Sentence Splitter",
-        produces = "sentence"
+        produces = { "sentence" },
+        requires_format = { "text", "json", "jsonld" }
 )
 public class SentenceSplitter extends AbstractStanfordService
 {
@@ -59,7 +60,14 @@ public class SentenceSplitter extends AbstractStanfordService
 //         pool.add(new StanfordCoreNLP(properties));
 //      }
       service = new StanfordCoreNLP(properties);
-      logger.info("Standford sentence splitter created.");
+      if (service == null)
+      {
+         logger.error("Unable to create the StanfordCoreNLP object.");
+      }
+      else
+      {
+         logger.info("Standford sentence splitter created.");
+      }
    }
 
    @Override
@@ -67,40 +75,58 @@ public class SentenceSplitter extends AbstractStanfordService
    {
       logger.info("Executing Stanford sentence splitter.");
 
-      Map<String,String> map = Serializer.parse(input, HashMap.class);
-      String discriminator = map.get("discriminator");
-      if (discriminator == null)
+      Data data = Serializer.parse(input, Data.class);
+      if (data.getDiscriminator() == null)
       {
          return createError(Messages.MISSING_DISCRIMINATOR);
       }
-      String payload = map.get("payload");
-      if (payload == null)
-      {
-         return createError(Messages.MISSING_PAYLOAD);
-      }
 
+      String discriminator = data.getDiscriminator();
       Container container = null;
-      String error = null;
+      String json = null;
       switch (discriminator)
       {
          case Constants.Uri.ERROR:
-            error = input;
+            json = input;
+            break;
+         case Constants.Uri.GETMETADATA:
+            json = super.getMetadata();
+            break;
+         case Constants.Uri.TEXT:
+            if (data.getPayload() == null)
+            {
+               json = createError(Messages.MISSING_PAYLOAD);
+            }
+            else
+            {
+               container = new Container();
+               container.setText(data.getPayload().toString());
+            }
             break;
          case Constants.Uri.JSON: // fall through
          case Constants.Uri.JSON_LD:
-            container = Serializer.parse(payload, Container.class);
+//            container = Serializer.parse(payload, Container.class);
+            if (data.getPayload() == null)
+            {
+               json = createError(Messages.MISSING_PAYLOAD);
+            }
+            else
+            {
+               container = new Container((Map) data.getPayload());
+            }
             break;
          default:
-            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            break;
       }
-      if (error != null)
+      if (json != null)
       {
-         return error;
+         return json;
       }
 
       Annotation document = new Annotation(container.getText());
-      Data<Container> data = new Data<Container>();
-      StanfordCoreNLP service = null;
+//      Data<Container> data = new Data<Container>();
+//      StanfordCoreNLP service = null;
 //      try
 //      {
          //service = pool.take();
@@ -110,13 +136,22 @@ public class SentenceSplitter extends AbstractStanfordService
 //            return DataFactory.error(Messages.BUSY);
 //         }
 
+      if (service == null)
+      {
+         return createError("No service object has been instantiated.");
+      }
+      if (document == null)
+      {
+         return createError("Unable to create Stanford Annotation document for text.");
+      }
+
       service.annotate(document);
       List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-      View step = Converter.addSentences(new View(), sentences);
+      View view = Converter.addSentences(new View(), sentences);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      step.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
-      step.addContains(Annotations.SENTENCE, producer, "chunk:sentence");
-      container.getViews().add(step);
+//      view.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
+      view.addContains(Annotations.SENTENCE, producer, "sentence:stanford");
+      container.getViews().add(view);
       data.setDiscriminator(Constants.Uri.JSON_LD);
       data.setPayload(container);
       //data = DataFactory.json(container.toJson());
@@ -134,7 +169,7 @@ public class SentenceSplitter extends AbstractStanfordService
 //         }
 //      }
       logger.info("Sentence splitter complete.");
-      return Serializer.toJson(data);
+      return data.asJson();
    }
 
 //   public Data configure(Data input)
