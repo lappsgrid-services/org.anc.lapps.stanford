@@ -7,15 +7,19 @@ import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 //import org.lappsgrid.discriminator.*;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.discriminator.Constants;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.lappsgrid.discriminator.Constants.Uri;
 import static org.junit.Assert.assertTrue;
 
@@ -37,29 +41,38 @@ public class NamedEntityRecognizerTest
       json = ner.execute(json);
       Data result = Serializer.parse(json, Data.class);
       assertFalse(result.getPayload().toString(), TestUtils.isError(result));
+      assertTrue("Invalid return type. Expected JSON_LD found " + result.getDiscriminator(), TestUtils.isa(result, Uri.JSON_LD));
+      Container container = new Container((Map) result.getPayload());
 
-//      Data<String> data = new Data<>(Uri.TEXT, null, text);
-//      data.setDiscriminator(Uri.TEXT);
-//      data.setPayload(text);
-//      Data<String> input = new Data<>(Uri.TEXT, null, text);
-//      String json = Serializer.toJson(input);
-//      String tokenized = tokenizer.execute(json);
-//
-//      WebService tagger = new Tagger();
-//      String tagged = tagger.execute(tokenized);
-//
-//      WebService ner = new NamedEntityRecognizer();
-//      String result = ner.execute(tagged);
-//      Map<String,String> map = Serializer.parse(result, HashMap.class);
-//      String discriminator = map.get("discriminator");
-//      String payload = map.get("payload");
-//
-//      assertFalse(payload, Uri.ERROR.equals(discriminator));
-//      assertTrue("Expected JSON", Uri.JSON.equals(discriminator));
-////      System.out.println(payload);
-//      Container container = Serializer.parse(payload, Container.class);
-//      System.out.println(Serializer.toPrettyJson(container));
+      // Ensure the container contains the views that we think it should.
+      List<View> views = container.getViews();
+      assertTrue("Wrong number of views. Expected 3 found " + views.size(), views.size() == 3);
+      views = container.findViewsThatContain(Uri.TOKEN);
+      assertTrue("Wrong number of token views. Expected 1 found " + views.size(), views.size() == 1);
+
+      views = container.findViewsThatContain(Uri.POS);
+      assertTrue("Wrong number of pos views. Expected 1 found " + views.size(), views.size() == 1);
+
+      views = container.findViewsThatContain(Uri.NE);
+      assertTrue("Wrong number of NE views. Expected 1 found " + views.size(), views.size() == 1);
    }
+
+   @Test
+   public void testMetadata()
+   {
+      WebService tokenizer = new NamedEntityRecognizer();
+      Data<Void> command = new Data<Void>(Constants.Uri.GETMETADATA);
+      String result = tokenizer.execute(command.asJson());
+      assertNotNull("NamedEntityRecognizer did not return metadata", result);
+      Data<Object> data = Serializer.parse(result, Data.class);
+      assertNotNull("Unable to parse metadata.", data);
+      assertFalse(data.getPayload().toString(), TestUtils.isError(data));
+      assertTrue("Wrong data type returned", TestUtils.isa(data, Constants.Uri.META));
+      ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
+      assertNotNull("Unable to parse metadata.", metadata);
+      TestUtils.check(NamedEntityRecognizer.class.getName(), metadata.getName());
+      TestUtils.check("http://www.anc.org", metadata.getVendor());
+      TestUtils.check(Version.getVersion(), metadata.getVersion());   }
 
 //   @Ignore
 //   public void testOnlyNER() throws IOException

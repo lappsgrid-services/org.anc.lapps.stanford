@@ -93,6 +93,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
    @Override
    public String execute(String input)
    {
+      logger.info("Executing the Stanford Named Entity Recognizer.");
+
       // A savedException indicates there was a problem creating the CRFClassifier
       // object.
       if (savedException != null)
@@ -142,7 +144,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return error;
       }
 
-      Container container = Serializer.parse(data.getPayload().toString(), Container.class);
+//      Container container = Serializer.parse(data.getPayload().toString(), Container.class);
+      Container container = new Container((Map)data.getPayload());
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
 
       List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
@@ -211,7 +214,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
          //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
-         step.addContains(Annotations.NE, producer, "ner:stanford");
+         step.addContains(Constants.Uri.NE, producer, "ner:stanford");
          container.getViews().add(step);
       }
       data.setDiscriminator(Constants.Uri.JSON_LD);

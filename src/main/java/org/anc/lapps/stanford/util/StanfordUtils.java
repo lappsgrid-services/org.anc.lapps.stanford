@@ -21,6 +21,7 @@ import org.anc.lapps.stanford.LappsCoreLabel;
 //import org.lappsgrid.serialization.Annotation;
 //import org.lappsgrid.serialization.Container;
 //import org.lappsgrid.serialization.View;
+import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
@@ -69,37 +70,19 @@ public class StanfordUtils
 
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)
    {
-      List<View> steps = container.getViews();
-//      ProcessingStep taggedStep = null;
-//      for (int i = steps.size() - 1; i >= 0; i--)
+//      List<View> steps = container.getViews();
+//      View taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
+//      if (taggedStep == null)
 //      {
-//         ProcessingStep step = container.getSteps().get(i);
-//         boolean hasTags = false;
-//         String contains = (String) step.getMetadata().get("contains");
-//         if (contains != null)
-//         {
-//            hasTags = contains.contains("POS");
-//         }
-//         else
-//         {
-//            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-//            hasTags = producedBy.toLowerCase().contains("tagger");
-//         }
-//
-//         if (hasTags)
-//         {
-//            taggedStep = step;
-//            break;
-//         }
+//         return null;
 //      }
-      View taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
-      if (taggedStep == null)
-      {
-         return null; 
-      }
-      
-      List<Annotation> annotations = taggedStep.getAnnotations();
+      List<View> views = container.findViewsThatContain(Constants.Uri.POS);
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
+      if (views == null || views.size() == 0) {
+         return labels;
+      }
+      View taggedStep = views.get(0);
+      List<Annotation> annotations = taggedStep.getAnnotations();
       for (Annotation a : annotations)
       {
          labels.add(new LappsCoreLabel(a));
