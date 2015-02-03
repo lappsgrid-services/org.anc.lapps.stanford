@@ -122,7 +122,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 //      }
 
       String discriminator = data.getDiscriminator();
-      String error = null;
+		logger.info("Discriminator is {}", discriminator);
+		String error = null;
       switch (discriminator)
       {
          case Constants.Uri.ERROR:

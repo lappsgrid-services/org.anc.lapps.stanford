@@ -97,7 +97,7 @@ public class Tagger extends AbstractStanfordService
       {
          return createError(Messages.MISSING_DISCRIMINATOR);
       }
-
+		logger.info("Discriminator is {}", discriminator);
       Container container = null;
       String json = null;
 
