@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  * @author Keith Suderman
  */
 
-//@Ignore
+@Ignore
 public class StanfordTests
 {
    protected String data;

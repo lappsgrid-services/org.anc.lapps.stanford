@@ -20,7 +20,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 
-@Ignore
+//@Ignore
 public class TaggerTest
 {
    WebService service;
@@ -37,7 +37,7 @@ public class TaggerTest
       this.service = null;
    }
 
-   @Test
+   @Ignore
    public void testTagger() throws IOException
    {
       String text = ResourceLoader.loadString("Bartok.txt");

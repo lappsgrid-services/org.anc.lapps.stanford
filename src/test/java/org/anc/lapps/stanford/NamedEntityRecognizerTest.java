@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 public class NamedEntityRecognizerTest
 {
 
-   @Test
+   @Ignore
    public void testSANamedEntityRecognizer() throws IOException, LappsException
    {
       String text = ResourceLoader.loadString("Bartok.txt");
