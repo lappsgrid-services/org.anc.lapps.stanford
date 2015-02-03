@@ -123,26 +123,29 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
       String discriminator = data.getDiscriminator();
 		logger.info("Discriminator is {}", discriminator);
-		String error = null;
+		String json = null;
       switch (discriminator)
       {
          case Constants.Uri.ERROR:
-            error = input;
+            json = input;
             break;
          case Constants.Uri.GETMETADATA:
-            error = super.getMetadata();
-            break;
+            json = super.getMetadata();
+				logger.info("Loaded metadata");
+				System.out.println(json);
+				break;
          case Constants.Uri.JSON: // fall through.
          case Constants.Uri.JSON_LD:
+				// Nothing needs to be done other than preventing the default case.
             break;
          default:
-            error = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
             break;
       }
 
-      if (error != null)
+      if (json != null)
       {
-         return error;
+         return json;
       }
 
 //      Container container = Serializer.parse(data.getPayload().toString(), Container.class);

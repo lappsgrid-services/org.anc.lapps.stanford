@@ -25,6 +25,8 @@ import org.lappsgrid.experimental.annotations.CommonMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Error;
 import org.lappsgrid.serialization.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,8 @@ import java.io.InputStream;
 )
 public abstract class AbstractStanfordService implements WebService
 {
+	private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
+
    protected String metadata;
 
    public AbstractStanfordService(Class<?> serviceClass)
@@ -73,7 +77,9 @@ public abstract class AbstractStanfordService implements WebService
       InputStream inputStream = loader.getResourceAsStream(resourceName);
       if (inputStream == null)
       {
-         throw new IOException("Unable to load resource" + resourceName);
+			String message = "Unable to load resource" + resourceName;
+			logger.error(message);
+         throw new IOException(message);
       }
 
       UTF8Reader reader = null;
@@ -83,12 +89,14 @@ public abstract class AbstractStanfordService implements WebService
          String content = reader.readString();
          Data<String> data = new Data<>(Constants.Uri.META, content);
          metadata = data.asJson();
+			logger.info("Loaded metadata.");
 //         metadata = DataFactory.meta(json);
       }
       catch (IOException e)
       {
 //         metadata = DataFactory.error("Unable to load metadata from " + resourceName, e);
-         metadata = Serializer.toPrettyJson(new Error("Unable to loade metadata from " + resourceName));
+			String message = "Unable to load metadata from " + resourceName;
+         metadata = Serializer.toPrettyJson(new Error(message));
          throw e;
       }
       finally
