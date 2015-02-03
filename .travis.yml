@@ -16,7 +16,7 @@ before_install:
     - sudo mkdir /usr/share/lapps/stanford/models
     - sudo chmod 777 /usr/share/lapps/stanford/models
     - mv english.conll.4class.distsim.crf.ser.gz /usr/share/lapps/stanford/classifiers
-    - mv english-bidirectional-distsim.tagger /usr/share/lapps/stanford/classifiers/models
+    - mv english-bidirectional-distsim.tagger /usr/share/lapps/stanford/models
 install:
     - mvn anc:version --settings settings.xml
     - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V --settings settings.xml
