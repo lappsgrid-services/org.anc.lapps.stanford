@@ -9,13 +9,16 @@ branches:
         - feature/v2.0.0
 before_install:
     - curl -O http://www.anc.org/tools/settings.xml
+    - curl -O http://www.anc.org/tools/english.conll.4class.distsim.crf.ser.gz
+    - curl -O http://www.anc.org/tools/english-bidirectional-distsim.tagger
     - sudo mkdir -p /usr/share/lapps/stanford/classifiers
     - sudo chmod 777 /usr/share/lapps/stanford/classifiers
-    - sudo mkdir /usr/share/lapps/stanford/classifiers/models
-    - sudo chmod 777 /usr/share/lapps/stanford/classifiers/models
-    - pushd /usr/share/lapps/stanford/classifiers ; curl -O http://www.anc.org/tools/english.conll.4class.distsim.crf.ser.gz ; popd
-    - pushd /usr/share/lapps/stanford/classifiers/models ; curl -O http://www.anc.org/tools/english-bidirectional-distsim.tagger ; popd
-install: 
+    - sudo mkdir /usr/share/lapps/stanford/models
+    - sudo chmod 777 /usr/share/lapps/stanford/models
+    - mv english.conll.4class.distsim.crf.ser.gz /usr/share/lapps/stanford/classifiers
+    - mv english-bidirectional-distsim.tagger /usr/share/lapps/stanford/classifiers/models
+install:
+    - mvn anc:version --settings settings.xml
     - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V --settings settings.xml
 script:
     - mvn clean test --settings settings.xml
