@@ -77,7 +77,7 @@ public abstract class AbstractStanfordService implements WebService
       InputStream inputStream = loader.getResourceAsStream(resourceName);
       if (inputStream == null)
       {
-			String message = "Unable to load resource" + resourceName;
+			String message = "Unable to load resource " + resourceName;
 			logger.error(message);
          throw new IOException(message);
       }
