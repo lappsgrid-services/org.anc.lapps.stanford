@@ -21,4 +21,4 @@ install:
     - mvn anc:version --settings settings.xml
     - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V --settings settings.xml
 script:
-  - mvn clean test --settings settings.xml
+    - mvn clean test --settings settings.xml
