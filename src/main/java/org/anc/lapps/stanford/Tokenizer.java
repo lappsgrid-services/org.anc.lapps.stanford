@@ -16,90 +16,135 @@
  */
 package org.anc.lapps.stanford;
 
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
 import org.anc.lapps.stanford.util.Converter;
-import org.anc.util.IDGenerator;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.Constants;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Serializer;
+import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * @author Keith Suderman
- */
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
+@ServiceMetadata(
+        description = "Stanford Tokenizer",
+        produces = "token"
+)
 public class Tokenizer extends AbstractStanfordService
 {
    private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
 
    public Tokenizer()
    {
-      super("tokenize");
-      logger.info("Stanford tokenizer created.");
+      super(Tokenizer.class);
    }
 
    @Override
-   public long[] requires()
+   public String execute(String input)
    {
-      return new long[]{Types.STANFORD, Types.SENTENCE};
-   }
+      logger.info("Executing Stanford stand-alone tokenizer");
+      Container container = null;
+      Map<String,Object> map = Serializer.parse(input, HashMap.class);
 
-   @Override
-   public long[] produces()
-   {
-      return new long[]{Types.STANFORD, Types.SENTENCE, Types.TOKEN};
-   }
-
-   @Override
-   public Data execute(Data input)
-   {
-      logger.info("Executing Stanford tokenizer.");
-      Container container = createContainer(input);
-      if (container == null)
+      Object object = map.get("discriminator");
+      if (object == null)
+      {
+         return createError(Messages.MISSING_DISCRIMINATOR);
+      }
+      String discriminator = object.toString();
+      if (isError(discriminator))
       {
          return input;
       }
-      String text = container.getText();
-      Annotation document = new Annotation(text);
-      Data data = null;
-      StanfordCoreNLP service = null;
-      try
-      {
-         service = pool.take();
-         service.annotate(document);
-         List<CoreLabel> tokens = document.get(TokensAnnotation.class);
-         if (tokens == null)
-         {
-            return DataFactory.error("Stanford tokenizer returned null.");
-         }
-         ProcessingStep step = Converter.addTokens(new ProcessingStep(), tokens);
-         String name = this.getClass().getName() + ":" + Version.getVersion();
-//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-//         step.getMetadata().put(Metadata.CONTAINS, Annotations.TOKEN);
-         container.getSteps().add(step);
-         data = DataFactory.json(container.toJson());
-      }
-      catch (Exception e)
-      {
-         data = DataFactory.error(e.getMessage());
-      }
-      finally
-      {
-         if (service != null)
-         {
-            pool.add(service);
-         }
-      }
-      return data;
-   }
 
+      String text = null;
+      String json = null;
+      switch(discriminator) {
+         case Uri.ERROR:
+            json = input;
+            break;
+         case Uri.TEXT:
+            Object payload = map.get("payload");
+            if (payload == null)
+            {
+               return createError(Messages.MISSING_PAYLOAD);
+            }
+            text = payload.toString();
+            container = new Container();
+            container.setText(text);
+            break;
+         case Uri.GETMETADATA:
+            json = super.getMetadata();
+            break;
+         default:
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+      }
+      if (json != null)
+      {
+         return json;
+      }
+
+      List<CoreLabel> tokens = new ArrayList<CoreLabel>();
+      PTBTokenizer ptbt = new PTBTokenizer(new StringReader(text), new CoreLabelTokenFactory(), "ptb3Escaping=false");
+      for (CoreLabel label; ptbt.hasNext(); )
+      {
+         label = (CoreLabel) ptbt.next();
+         tokens.add(label);
+      }
+      if (tokens.size() == 0)
+      {
+         return createError("PTBTokenizer returned no tokens.");
+      }
+
+		View view = Converter.addTokens(new View(), tokens);
+      String producer = this.getClass().getName() + ":" + Version.getVersion();
+      view.addContains(Annotations.TOKEN, producer, "stanford");
+//      Map<String,String> metadata = step.getMetadata();
+//      metadata.put(Metadata.PRODUCED_BY, name);
+//      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
+      container.getViews().add(view);
+      map = null;
+      Data<Container> data = new Data<Container>();
+      data.setDiscriminator(Uri.JSON_LD);
+      data.setPayload(container);
+      return Serializer.toJson(data);
+   }
+   
+//   protected Container createContainer(Data input)
+//   {
+//      Container container = null;
+//      long inputType = DiscriminatorRegistry.get(input.getDiscriminator());
+//      if (inputType == Types.ERROR)
+//      {
+//         return null;
+//      }
+//      else if (inputType == Types.TEXT)
+//      {
+//         container = new Container();
+//         container.setText(input.getPayload());
+//      }
+//      else if (inputType == Types.JSON)
+//      {
+//         container = new Container(input.getPayload());
+//      }
+//      return container;
+//   }
+
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 }

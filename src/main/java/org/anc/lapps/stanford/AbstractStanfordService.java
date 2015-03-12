@@ -16,64 +16,100 @@
  */
 package org.anc.lapps.stanford;
 
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import org.anc.lapps.serialization.Container;
-import org.lappsgrid.api.Data;
+import org.anc.io.UTF8Reader;
+import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.WebService;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Types;
+import org.lappsgrid.discriminator.*;
+import org.lappsgrid.experimental.annotations.CommonMetadata;
+import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.Error;
+import org.lappsgrid.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  * @author Keith Suderman
  */
+@CommonMetadata(
+	vendor = "http://www.anc.org",
+	license = "apache2",
+	format = "lapps",
+	language = "en"
+)
 public abstract class AbstractStanfordService implements WebService
 {
-   private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
-   protected static final int POOL_SIZE = 1;
-//   protected StanfordCoreNLP service;
-   protected BlockingQueue<StanfordCoreNLP> pool;
+	private static final Logger logger = LoggerFactory.getLogger(AbstractStanfordService.class);
 
-   public AbstractStanfordService(String annotators)
+   protected String metadata;
+
+   public AbstractStanfordService(Class<?> serviceClass)
    {
-      logger.info("Creating AbstractStanfordService with annotators: {}", annotators);
-      Properties properties = new Properties();
-      properties.setProperty("annotators", annotators);
-      pool = new ArrayBlockingQueue<StanfordCoreNLP>(POOL_SIZE);
-      for (int i = 0; i < POOL_SIZE; ++i)
+      try
       {
-         pool.add(new StanfordCoreNLP(properties));
+         loadMetadata(serviceClass);
+      }
+      catch (IOException ignored)
+      {
+         // The only IOException not handled by loadMetadata is the one
+         // thrown when closing the input stream, and by that point we
+         // are good to go so we ignore it.
       }
    }
 
-   @Override
-   public Data configure(Data config)
+   protected boolean isError(String discriminator)
    {
-      return DataFactory.error("Unsupported operation.");
+      return Uri.ERROR.equals(discriminator);
    }
 
-   protected Container createContainer(Data input)
+   protected String createError(String message)
    {
-      Container container = null;
-      long inputType = input.getDiscriminator();
-      if (inputType == Types.ERROR)
+      return new Error(message).asPrettyJson();
+   }
+
+   private void loadMetadata(Class<?> serviceClass) throws IOException
+   {
+      ClassLoader loader = ResourceLoader.getClassLoader();
+      String resourceName = "metadata/" + serviceClass.getName() + ".json";
+      InputStream inputStream = loader.getResourceAsStream(resourceName);
+      if (inputStream == null)
       {
-         return null;
+			String message = "Unable to load resource " + resourceName;
+			logger.error(message);
+         throw new IOException(message);
       }
-      else if (inputType == Types.TEXT)
+
+      UTF8Reader reader = null;
+      try
       {
-         container = new Container(false);
-         container.setText(input.getPayload());
+         reader = new UTF8Reader(inputStream);
+         String content = reader.readString();
+         Data<String> data = new Data<>(Uri.META, content);
+         metadata = data.asJson();
+			logger.info("Loaded metadata.");
       }
-      else if (inputType == Types.JSON)
+      catch (IOException e)
       {
-         container = new Container(input.getPayload());
+			String message = "Unable to load metadata from " + resourceName;
+         metadata = Serializer.toPrettyJson(new Error(message));
+         throw e;
       }
-      return container;
+      finally
+      {
+         if (reader != null)
+         {
+            reader.close();
+         }
+      }
+   }
+
+
+   public String getMetadata()
+   {
+      return metadata;
    }
 }

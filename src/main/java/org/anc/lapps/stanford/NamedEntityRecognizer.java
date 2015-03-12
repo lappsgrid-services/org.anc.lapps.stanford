@@ -16,91 +16,234 @@
  */
 package org.anc.lapps.stanford;
 
-//import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
-import org.anc.lapps.stanford.util.Converter;
-import org.lappsgrid.api.Data;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Types;
-import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Metadata;
+import org.anc.lapps.stanford.util.StanfordUtils;
+import org.anc.util.IDGenerator;
+import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.serialization.*;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
+import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @author Keith Suderman
- */
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
+@ServiceMetadata(
+        description = "Stanford Named Entity Recognizer",
+        requires = "token",
+        produces = {"date", "person", "location", "organization"}
+)
 public class NamedEntityRecognizer extends AbstractStanfordService
 {
+   public static final int POOL_SIZE = 1;
+
+   /* How long to wait for a processing thread to become available to service an incoming request. */
+   public static final long DELAY = 5;
+   public static final TimeUnit UNIT = TimeUnit.SECONDS;
+
    private static final Logger logger = LoggerFactory.getLogger(NamedEntityRecognizer.class);
+
+   private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
+
+   //protected AbstractSequenceClassifier classifier;
+   protected BlockingQueue<AbstractSequenceClassifier> pool;
+   protected Throwable savedException = null;
+   protected String exceptionMessage = null;
 
    public NamedEntityRecognizer()
    {
-      super("tokenize, ssplit, pos, lemma, ner");
-   }
-
-   @Override
-   public long[] requires()
-   {
-      return new long[] { Types.TEXT };
-   }
-
-   @Override
-   public long[] produces()
-   {
-      return new long[] { Types.JSON, Types.SENTENCE, Types.TOKEN, Types.POS, Types.NAMED_ENTITES};
-   }
-
-   @Override
-   public Data execute(Data input)
-   {
-      logger.info("Executing Stanford named entity recognizer.");
-      Container container = createContainer(input);
-      if (container == null)
-      {
-         return input;
-      }
-
-      Annotation document = new Annotation(container.getText());
-      Data data = null;
-      StanfordCoreNLP service = null;
+      super(NamedEntityRecognizer.class);
+      pool = new ArrayBlockingQueue<AbstractSequenceClassifier>(POOL_SIZE);
       try
       {
-         service = pool.take();
-         service.annotate(document);
+//         classifier = CRFClassifier.getClassifier(classifierPath);
+         for (int i=0; i < POOL_SIZE; ++i)
+         {
+            pool.add(CRFClassifier.getClassifier(classifierPath));
+         }
+         logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
+      }
+      catch (OutOfMemoryError e)
+      {
+         logger.error("Ran out of memory creating the CRFClassifier.", e);
+         savedException = e;
+      }
+      catch (Exception e)
+      {
+         logger.error("Unable to create the CRFClassifier.", e);
+         savedException = e;
+      }
+   }
+   
+   @Override
+   public String execute(String input)
+   {
+      logger.info("Executing the Stanford Named Entity Recognizer.");
 
-         // these are all the sentences in this document
-         // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
-         List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
-         ProcessingStep step = new ProcessingStep();
-         String name = this.getClass().getName() + ":" + Version.getVersion();
-//         step.getMetadata().put(Metadata.PRODUCED_BY, name);
-//         step.getMetadata().put(Metadata.CONTAINS, Annotations.NE);
-         Converter.addSentences(step, sentences);
-         Converter.addTokens(step, document.get(CoreAnnotations.TokensAnnotation.class));
-         container.getSteps().add(step);
-//         String json = Converter.toJson(sentences);
-         data = DataFactory.json(container.toJson());
+      // A savedException indicates there was a problem creating the CRFClassifier
+      // object.
+      if (savedException != null)
+      {
+         if (exceptionMessage == null)
+         {
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter writer = new PrintWriter(stringWriter);
+            writer.println(savedException.getMessage());
+            savedException.printStackTrace(writer);
+            exceptionMessage = stringWriter.toString();
+         }
+         return createError(exceptionMessage);
+      }
+
+      Data data = Serializer.parse(input, Data.class);
+      if (data == null)
+      {
+         return createError("Unable to parse input.");
+      }
+//      String payload = map.get("payload");
+//      if (payload == null)
+//      {
+//         return createError(Messages.MISSING_PAYLOAD);
+//      }
+
+      String discriminator = data.getDiscriminator();
+		logger.info("Discriminator is {}", discriminator);
+		String json = null;
+      switch (discriminator)
+      {
+         case Uri.ERROR:
+            json = input;
+            break;
+         case Uri.GETMETADATA:
+            json = super.getMetadata();
+				logger.info("Loaded metadata");
+				//System.out.println(json);
+				break;
+         case Uri.JSON: // fall through.
+         case Uri.JSON_LD:
+				// Nothing needs to be done other than preventing the default case.
+            break;
+         default:
+            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
+            break;
+      }
+
+      if (json != null)
+      {
+         return json;
+      }
+
+      Container container = new Container((Map)data.getPayload());
+      logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
+
+      List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
+      
+      if (labels == null)
+      {
+         String message = "Unable to initialize a list of Stanford CoreLabels.";
+         logger.warn(message);
+         return createError(message);
+      }
+
+      AbstractSequenceClassifier classifier = null;
+      List<CoreLabel> classifiedLabels = null;
+      try
+      {
+//         classifier = pool.take();
+         classifier = pool.poll(DELAY, UNIT);
+         if (classifier == null)
+         {
+            logger.warn(Messages.BUSY);
+            return createError(Messages.BUSY);
+         }
+
+         classifiedLabels = classifier.classify(labels);
       }
       catch (InterruptedException e)
       {
-         data = DataFactory.error(e.getMessage());
+         //e.printStackTrace();
       }
       finally
       {
-         if (service != null)
+         if (classifier != null)
          {
-            pool.add(service);
+            pool.add(classifier);
          }
       }
-      return data;
+
+      if (classifiedLabels != null)
+      {
+         IDGenerator id = new IDGenerator();
+         View view = new View();
+         String invalidNer = "O";
+         for (CoreLabel label : classifiedLabels)
+         {
+            String ner = label.get(AnswerAnnotation.class);
+            if (!ner.equals(invalidNer))
+            {
+               Annotation annotation = new Annotation();
+               annotation.setLabel(correctCase(ner));
+               annotation.setId(id.generate("ne"));
+               long start = label.beginPosition();
+               long end = label.endPosition();
+               annotation.setStart(start);
+               annotation.setEnd(end);
+
+               Map<String,String> features = annotation.getFeatures();
+               add(features, Features.Token.LEMMA, label.lemma());
+               add(features, "category", label.category());
+               add(features, Features.Token.PART_OF_SPEECH, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+
+               add(features, "ner", label.ner());
+               add(features, "word", label.word());
+               view.addAnnotation(annotation);
+
+            }
+         }
+
+         //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
+         String producer = this.getClass().getName() + ":" + Version.getVersion();
+         view.addContains(Uri.NE, producer, "ner:stanford");
+         container.getViews().add(view);
+      }
+      data.setDiscriminator(Uri.JSON_LD);
+      data.setPayload(container);
+      
+      return Serializer.toJson(data);
    }
+
+   private String correctCase(String item)
+   {
+      String head = item.substring(0, 1);
+      String tail = item.substring(1).toLowerCase();
+      return head + tail;
+   }
+
+   private void add(Map<String,String> features, String name, String value)
+   {
+      if (value != null)
+      {
+         features.put(name, value);
+      }
+   }
+
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 }

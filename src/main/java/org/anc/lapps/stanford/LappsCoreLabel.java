@@ -16,13 +16,12 @@
  */
 package org.anc.lapps.stanford;
 
-import java.util.Map;
-
-import org.anc.lapps.serialization.Annotation;
+import edu.stanford.nlp.ling.CoreLabel;
+import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 
-import edu.stanford.nlp.ling.CoreLabel;
+import java.util.Map;
 
 public class LappsCoreLabel extends CoreLabel
 {
@@ -33,8 +32,8 @@ public class LappsCoreLabel extends CoreLabel
       super();
       this.setWord((String) a.getFeatures().get("word"));
       this.setId(a.getId());
-      this.setBeginPosition((int) a.getStart());
-      this.setEndPosition((int) a.getEnd());
+      this.setBeginPosition(a.getStart().intValue());
+      this.setEndPosition(a.getEnd().intValue());
       
       Map features = a.getFeatures();
       if (features.get(Features.Token.PART_OF_SPEECH) != null)
