@@ -38,7 +38,7 @@ public class TaggerTest
       this.service = null;
    }
 
-   @Ignore
+   @Test
    public void testTagger() throws IOException
    {
       String text = ResourceLoader.loadString("Bartok.txt");

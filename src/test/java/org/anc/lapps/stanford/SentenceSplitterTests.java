@@ -46,7 +46,7 @@ public class SentenceSplitterTests
 		service = null;
 	}
 
-	@Ignore
+	@Test
 	public void sentenceSplitterTest() throws IOException
 	{
 		String text = ResourceLoader.loadString("Bartok.txt");
