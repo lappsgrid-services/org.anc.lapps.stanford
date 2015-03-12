@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 @ServiceMetadata(
         description = "Stanford Tokenizer",
         produces = "token"
@@ -70,10 +72,10 @@ public class Tokenizer extends AbstractStanfordService
       String text = null;
       String json = null;
       switch(discriminator) {
-         case Constants.Uri.ERROR:
+         case Uri.ERROR:
             json = input;
             break;
-         case Constants.Uri.TEXT:
+         case Uri.TEXT:
             Object payload = map.get("payload");
             if (payload == null)
             {
@@ -83,7 +85,7 @@ public class Tokenizer extends AbstractStanfordService
             container = new Container();
             container.setText(text);
             break;
-         case Constants.Uri.GETMETADATA:
+         case Uri.GETMETADATA:
             json = super.getMetadata();
             break;
          default:
@@ -115,7 +117,7 @@ public class Tokenizer extends AbstractStanfordService
       container.getViews().add(view);
       map = null;
       Data<Container> data = new Data<Container>();
-      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setDiscriminator(Uri.JSON_LD);
       data.setPayload(container);
       return Serializer.toJson(data);
    }

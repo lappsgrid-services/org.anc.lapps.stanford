@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.List;
 
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -19,6 +18,8 @@ import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 //@Ignore
 public class TaggerTest
@@ -70,16 +71,16 @@ public class TaggerTest
       }
 
       System.out.println(views.get(0));
-      views = container.findViewsThatContain(Constants.Uri.TOKEN);
+      views = container.findViewsThatContain(Uri.TOKEN);
       assertNotNull("Find token views returned null.", views);
       assertTrue("Wrong number of token views. Expected 1 found " + views.size(), views.size() == 1);
 
-      views = container.findViewsThatContain(Constants.Uri.POS);
+      views = container.findViewsThatContain(Uri.POS);
       assertNotNull("Find pos views returned null", views);
       assertTrue("Wrong number of pos views. Expected 1 found " + views.size(), views.size() == 1);
 
       View view = views.get(0);
-      Contains contains = view.getContains(Constants.Uri.POS);
+      Contains contains = view.getContains(Uri.POS);
       assertNotNull("Unable to get contains section from view", contains);
       assertNotNull("contains.producer is null.", contains.getProducer());
    }
@@ -87,10 +88,10 @@ public class TaggerTest
    @Test
    public void testMetadata()
    {
-      Data<Void> request = new Data<>(Constants.Uri.GETMETADATA);
+      Data<Void> request = new Data<>(Uri.GETMETADATA);
       String json = service.execute(request.asJson());
       Data data = Serializer.parse(json, Data.class);
-      assertTrue("Wrong return type: " + data.getDiscriminator(), TestUtils.isa(data, Constants.Uri.META));
+      assertTrue("Wrong return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.META));
       ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
       assertNotNull("Unable to parse metadata.", metadata);
       TestUtils.check(Tagger.class.getName(), metadata.getName());

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lappsgrid.discriminator.Constants;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -48,7 +48,7 @@ public class TokenizerTest
    {
       WebService service = new Tokenizer();
       String text = ResourceLoader.loadString("Bartok.txt");
-      Data<String> input = new Data<>(Constants.Uri.TEXT, null, text);
+      Data<String> input = new Data<>(Uri.TEXT, text);
       String json = service.execute(Serializer.toJson(input));
       //System.out.println(json);
       Data<Object> result = Serializer.parse(json, Data.class);
@@ -57,7 +57,7 @@ public class TokenizerTest
       Object payload = result.getPayload();
       assertNotNull("Null payload.", payload);
       assertFalse(payload.toString(), TestUtils.isError(result));
-      assertTrue("Expected JSON LD. Found " + result.getDiscriminator(), TestUtils.isa(result, Constants.Uri.JSON_LD));
+      assertTrue("Expected JSON LD. Found " + result.getDiscriminator(), TestUtils.isa(result, Uri.JSON_LD));
       Container container = new Container((Map)payload);
       assertNotNull("No text in container", container.getText());
       int size = container.getViews().size();
@@ -72,7 +72,7 @@ public class TokenizerTest
       assertFalse("View metadata is empty.", metadata.size() == 0);
       Object map = metadata.get("contains");
       assertNotNull("No contains section in view metadata.", map);
-      Contains contains = view.getContains(Constants.Uri.TOKEN);
+      Contains contains = view.getContains(Uri.TOKEN);
       System.out.println(contains.getProducer());
 //      Discriminator discriminator = DiscriminatorRegistry.getByUri(result.getDiscriminator());
 //      long resultType = discriminator.getId();
@@ -88,13 +88,13 @@ public class TokenizerTest
    public void testMetadata()
    {
       WebService tokenizer = new Tokenizer();
-      Data<Void> command = new Data<Void>(Constants.Uri.GETMETADATA);
+      Data<Void> command = new Data<Void>(Uri.GETMETADATA);
       String result = tokenizer.execute(command.asJson());
       assertNotNull("Tokenizer did not return metadata", result);
       Data<Object> data = Serializer.parse(result, Data.class);
       assertNotNull("Unable to parse metadata.", data);
       assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-      assertTrue("Wrong data type returned", TestUtils.isa(data, Constants.Uri.META));
+      assertTrue("Wrong data type returned", TestUtils.isa(data, Uri.META));
       ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
       assertNotNull("Unable to parse metadata.", metadata);
       TestUtils.check(Tokenizer.class.getName(), metadata.getName());

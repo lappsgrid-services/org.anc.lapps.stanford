@@ -20,7 +20,6 @@ import org.anc.io.UTF8Reader;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.*;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.CommonMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Error;
@@ -30,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 /**
  * @author Keith Suderman
@@ -62,12 +63,12 @@ public abstract class AbstractStanfordService implements WebService
 
    protected boolean isError(String discriminator)
    {
-      return Constants.Uri.ERROR.equals(discriminator);
+      return Uri.ERROR.equals(discriminator);
    }
 
    protected String createError(String message)
    {
-      return Serializer.toPrettyJson(new Error(message));
+      return new Error(message).asPrettyJson();
    }
 
    private void loadMetadata(Class<?> serviceClass) throws IOException
@@ -87,14 +88,12 @@ public abstract class AbstractStanfordService implements WebService
       {
          reader = new UTF8Reader(inputStream);
          String content = reader.readString();
-         Data<String> data = new Data<>(Constants.Uri.META, content);
+         Data<String> data = new Data<>(Uri.META, content);
          metadata = data.asJson();
 			logger.info("Loaded metadata.");
-//         metadata = DataFactory.meta(json);
       }
       catch (IOException e)
       {
-//         metadata = DataFactory.error("Unable to load metadata from " + resourceName, e);
 			String message = "Unable to load metadata from " + resourceName;
          metadata = Serializer.toPrettyJson(new Error(message));
          throw e;

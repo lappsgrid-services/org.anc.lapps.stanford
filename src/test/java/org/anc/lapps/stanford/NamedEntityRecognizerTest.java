@@ -7,7 +7,6 @@ import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 //import org.lappsgrid.discriminator.*;
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.lappsgrid.discriminator.Constants.Uri;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 import static org.junit.Assert.assertTrue;
 
 public class NamedEntityRecognizerTest
@@ -61,13 +60,13 @@ public class NamedEntityRecognizerTest
    public void testMetadata()
    {
       WebService tokenizer = new NamedEntityRecognizer();
-      Data<Void> command = new Data<Void>(Constants.Uri.GETMETADATA);
+      Data<Void> command = new Data<Void>(Uri.GETMETADATA);
       String result = tokenizer.execute(command.asJson());
       assertNotNull("NamedEntityRecognizer did not return metadata", result);
       Data<Object> data = Serializer.parse(result, Data.class);
       assertNotNull("Unable to parse metadata.", data);
       assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-      assertTrue("Wrong data type returned", TestUtils.isa(data, Constants.Uri.META));
+      assertTrue("Wrong data type returned", TestUtils.isa(data, Uri.META));
       ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
       assertNotNull("Unable to parse metadata.", metadata);
       TestUtils.check(NamedEntityRecognizer.class.getName(), metadata.getName());

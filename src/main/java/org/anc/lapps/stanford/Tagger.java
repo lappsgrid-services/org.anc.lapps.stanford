@@ -19,19 +19,15 @@ package org.anc.lapps.stanford;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import org.anc.lapps.stanford.util.Converter;
-import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
-import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Contents;
-import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +42,8 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
         description = "Stanford Part of Speech Tagger",
@@ -72,7 +70,7 @@ public class Tagger extends AbstractStanfordService
       pool = new ArrayBlockingQueue<MaxentTagger>(POOL_SIZE);
       for (int i = 0; i < POOL_SIZE; ++i)
       {
-         pool.add(new MaxentTagger(Konstants.PATH.TAGGER_MODEL_PATH));
+         pool.add(new MaxentTagger(Constants.PATH.TAGGER_MODEL_PATH));
       }
    }
    
@@ -103,14 +101,14 @@ public class Tagger extends AbstractStanfordService
 
       switch(discriminator)
       {
-         case Constants.Uri.ERROR:
+         case Uri.ERROR:
             json = input;
             break;
-         case Constants.Uri.GETMETADATA:
+         case Uri.GETMETADATA:
             json = super.getMetadata();
             break;
-         case Constants.Uri.JSON: // fall through
-         case Constants.Uri.JSON_LD:
+         case Uri.JSON: // fall through
+         case Uri.JSON_LD:
             container = new Container(data.getPayload());
             if (container == null)
             {
@@ -133,7 +131,7 @@ public class Tagger extends AbstractStanfordService
 //         logger.warn("No tokens were found in any processing step");
 //         return createError("Unable to process input; no tokens found.");
 //      }
-      List<View> views = container.findViewsThatContain(Constants.Uri.TOKEN);
+      List<View> views = container.findViewsThatContain(Uri.TOKEN);
       if (views == null || views.size() == 0)
       {
          logger.warn("No tokens were found in any views.");
@@ -177,13 +175,13 @@ public class Tagger extends AbstractStanfordService
 
 		View step = Converter.addTokens(new View(), labels);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      step.addContains(Constants.Uri.POS, producer, Contents.TagSets.PENN);
+      step.addContains(Uri.POS, producer, Contents.TagSets.PENN);
       container.getViews().add(step);
 
 //      data.setDiscriminator(Constants.Uri.JSON_LD);
 //      data.setPayload(container);
 //      return data.asJson();
-      return new Data<Container>(Constants.Uri.JSON_LD, container).asJson();
+      return new Data<Container>(Uri.JSON_LD, container).asJson();
    }
    
 //   @Override
@@ -198,7 +196,7 @@ public class Tagger extends AbstractStanfordService
       WebService tokenizer = new Tokenizer();
       String inputText = ResourceLoader.loadString("blog-jet-lag.txt");
       Data<String> data = new Data<String>();
-      data.setDiscriminator(Constants.Uri.TEXT);
+      data.setDiscriminator(Uri.TEXT);
       data.setPayload(inputText);
       String tokenizerInput = Serializer.toJson(data);
       String tokenizerResult = tokenizer.execute(tokenizerInput);

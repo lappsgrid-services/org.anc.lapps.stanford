@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 /**
  * @author Keith Suderman
  */
@@ -86,13 +88,13 @@ public class SentenceSplitter extends AbstractStanfordService
       String json = null;
       switch (discriminator)
       {
-         case Constants.Uri.ERROR:
+         case Uri.ERROR:
             json = input;
             break;
-         case Constants.Uri.GETMETADATA:
+         case Uri.GETMETADATA:
             json = super.getMetadata();
             break;
-         case Constants.Uri.TEXT:
+         case Uri.TEXT:
             if (data.getPayload() == null)
             {
                json = createError(Messages.MISSING_PAYLOAD);
@@ -103,8 +105,8 @@ public class SentenceSplitter extends AbstractStanfordService
                container.setText(data.getPayload().toString());
             }
             break;
-         case Constants.Uri.JSON: // fall through
-         case Constants.Uri.JSON_LD:
+         case Uri.JSON: // fall through
+         case Uri.JSON_LD:
 //            container = Serializer.parse(payload, Container.class);
             if (data.getPayload() == null)
             {
@@ -150,9 +152,9 @@ public class SentenceSplitter extends AbstractStanfordService
       View view = Converter.addSentences(new View(), sentences);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
 //      view.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
-      view.addContains(Annotations.SENTENCE, producer, "sentence:stanford");
+      view.addContains(Uri.SENTENCE, producer, "sentence:stanford");
       container.getViews().add(view);
-      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setDiscriminator(Uri.JSON_LD);
       data.setPayload(container);
       //data = DataFactory.json(container.toJson());
 

@@ -23,25 +23,24 @@ import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.util.IDGenerator;
-import org.lappsgrid.discriminator.*;
 import org.lappsgrid.experimental.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.*;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Annotations;
 import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
         description = "Stanford Named Entity Recognizer",
@@ -58,7 +57,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
    private static final Logger logger = LoggerFactory.getLogger(NamedEntityRecognizer.class);
 
-   private static final String classifierPath = Konstants.PATH.NER_MODEL_PATH;
+   private static final String classifierPath = Constants.PATH.NER_MODEL_PATH;
 
    //protected AbstractSequenceClassifier classifier;
    protected BlockingQueue<AbstractSequenceClassifier> pool;
@@ -126,16 +125,16 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 		String json = null;
       switch (discriminator)
       {
-         case Constants.Uri.ERROR:
+         case Uri.ERROR:
             json = input;
             break;
-         case Constants.Uri.GETMETADATA:
+         case Uri.GETMETADATA:
             json = super.getMetadata();
 				logger.info("Loaded metadata");
-				System.out.println(json);
+				//System.out.println(json);
 				break;
-         case Constants.Uri.JSON: // fall through.
-         case Constants.Uri.JSON_LD:
+         case Uri.JSON: // fall through.
+         case Uri.JSON_LD:
 				// Nothing needs to be done other than preventing the default case.
             break;
          default:
@@ -148,7 +147,6 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return json;
       }
 
-//      Container container = Serializer.parse(data.getPayload().toString(), Container.class);
       Container container = new Container((Map)data.getPayload());
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
 
@@ -186,10 +184,11 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             pool.add(classifier);
          }
       }
+
       if (classifiedLabels != null)
       {
          IDGenerator id = new IDGenerator();
-         View step = new View();
+         View view = new View();
          String invalidNer = "O";
          for (CoreLabel label : classifiedLabels)
          {
@@ -211,17 +210,17 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
                add(features, "ner", label.ner());
                add(features, "word", label.word());
-               step.addAnnotation(annotation);
+               view.addAnnotation(annotation);
 
             }
          }
 
          //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
-         step.addContains(Constants.Uri.NE, producer, "ner:stanford");
-         container.getViews().add(step);
+         view.addContains(Uri.NE, producer, "ner:stanford");
+         container.getViews().add(view);
       }
-      data.setDiscriminator(Constants.Uri.JSON_LD);
+      data.setDiscriminator(Uri.JSON_LD);
       data.setPayload(container);
       
       return Serializer.toJson(data);

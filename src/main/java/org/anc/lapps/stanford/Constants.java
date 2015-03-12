@@ -23,11 +23,11 @@ import java.io.IOException;
 /**
  * @author Keith Suderman
  */
-public class Konstants
+public class Constants
 {
    public static final PathConstants PATH = new PathConstants();
 
-   public Konstants()
+   public Constants()
    {
 
    }

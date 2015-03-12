@@ -1,4 +1,5 @@
 {
+  "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
   "name" : "org.anc.lapps.stanford.Tagger",
   "version" : "2.0.0-SNAPSHOT",
   "description" : "Stanford Part of Speech Tagger",

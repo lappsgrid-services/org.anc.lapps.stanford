@@ -9,13 +9,14 @@ import static org.junit.Assert.*;
 
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
+
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,17 +57,17 @@ public class SentenceSplitterTests
 		Data data = Serializer.parse(json, Data.class);
 		assertNotNull("Unable to parse response.", data);
 		assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-		assertTrue("Invalid return type: " + data.getDiscriminator(), TestUtils.isa(data, Constants.Uri.JSON_LD));
+		assertTrue("Invalid return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.JSON_LD));
 
 		Container container = new Container((Map)data.getPayload());
 		List<View> views = container.getViews();
 		// There should be two views: one view with tokens and a second with sentences.
 		assertTrue("Wrong number of views. Expected 1 found " + views.size(), views.size() == 1);
 
-		views = container.findViewsThatContain(Constants.Uri.TOKEN);
+		views = container.findViewsThatContain(Uri.TOKEN);
 		assertTrue("Wrong number of token views. Expected = 0 found " + views.size(), views.size() == 0);
 
-		views = container.findViewsThatContain(Constants.Uri.SENTENCE);
+		views = container.findViewsThatContain(Uri.SENTENCE);
 		assertTrue("Wrong number of sentence views. Expected 1 found " + views.size(), views.size() == 1);
 
 		View view = views.get(0);
@@ -77,7 +78,7 @@ public class SentenceSplitterTests
 	@Test
 	public void testMetadata()
 	{
-		Data<Void> command = new Data<Void>(Constants.Uri.GETMETADATA);
+		Data<Void> command = new Data<Void>(Uri.GETMETADATA);
 		String json = service.execute(command.asJson());
 		assertNotNull("No metadata returned.", json);
 
@@ -85,7 +86,7 @@ public class SentenceSplitterTests
 		assertNotNull("Unable to parse response.", data);
 
 		assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-		TestUtils.check(Constants.Uri.META, data.getDiscriminator());
+		TestUtils.check(Uri.META, data.getDiscriminator());
 
 		ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
 		assertNotNull("Unable to parse metadata.", metadata);
