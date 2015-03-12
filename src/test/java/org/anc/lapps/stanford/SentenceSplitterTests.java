@@ -46,7 +46,7 @@ public class SentenceSplitterTests
 		service = null;
 	}
 
-	@Ignore
+	@Test
 	public void sentenceSplitterTest() throws IOException
 	{
 		String text = ResourceLoader.loadString("Bartok.txt");
@@ -78,8 +78,7 @@ public class SentenceSplitterTests
 	@Test
 	public void testMetadata()
 	{
-		Data<Void> command = new Data<Void>(Uri.GETMETADATA);
-		String json = service.execute(command.asJson());
+		String json = service.getMetadata();
 		assertNotNull("No metadata returned.", json);
 
 		Data data = Serializer.parse(json, Data.class);

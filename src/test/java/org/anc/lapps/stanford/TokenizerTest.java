@@ -88,8 +88,7 @@ public class TokenizerTest
    public void testMetadata()
    {
       WebService tokenizer = new Tokenizer();
-      Data<Void> command = new Data<Void>(Uri.GETMETADATA);
-      String result = tokenizer.execute(command.asJson());
+      String result = tokenizer.getMetadata();
       assertNotNull("Tokenizer did not return metadata", result);
       Data<Object> data = Serializer.parse(result, Data.class);
       assertNotNull("Unable to parse metadata.", data);

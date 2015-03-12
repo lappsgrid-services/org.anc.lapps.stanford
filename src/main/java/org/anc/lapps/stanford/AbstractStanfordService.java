@@ -53,11 +53,12 @@ public abstract class AbstractStanfordService implements WebService
       {
          loadMetadata(serviceClass);
       }
-      catch (IOException ignored)
+      catch (IOException ignore)
       {
          // The only IOException not handled by loadMetadata is the one
-         // thrown when closing the input stream, and by that point we
-         // are good to go so we ignore it.
+         // thrown when closing the InputStream. All other IOExceptions
+         // have already been logged.
+//         logger.error("Unable to load metadata for {}", serviceClass.getName(), e);
       }
    }
 
@@ -73,9 +74,9 @@ public abstract class AbstractStanfordService implements WebService
 
    private void loadMetadata(Class<?> serviceClass) throws IOException
    {
-      ClassLoader loader = ResourceLoader.getClassLoader();
-      String resourceName = "metadata/" + serviceClass.getName() + ".json";
-      InputStream inputStream = loader.getResourceAsStream(resourceName);
+//      ClassLoader loader = ResourceLoader.getClassLoader();
+      String resourceName = "/metadata/" + serviceClass.getName() + ".json";
+      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
       if (inputStream == null)
       {
 			String message = "Unable to load resource " + resourceName;
@@ -95,6 +96,7 @@ public abstract class AbstractStanfordService implements WebService
       catch (IOException e)
       {
 			String message = "Unable to load metadata from " + resourceName;
+         logger.error(message, e);
          metadata = Serializer.toPrettyJson(new Error(message));
          throw e;
       }
