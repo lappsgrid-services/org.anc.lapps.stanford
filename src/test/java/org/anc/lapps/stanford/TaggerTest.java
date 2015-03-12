@@ -88,8 +88,7 @@ public class TaggerTest
    @Test
    public void testMetadata()
    {
-      Data<Void> request = new Data<>(Uri.GETMETADATA);
-      String json = service.execute(request.asJson());
+      String json = service.getMetadata();
       Data data = Serializer.parse(json, Data.class);
       assertTrue("Wrong return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.META));
       ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);

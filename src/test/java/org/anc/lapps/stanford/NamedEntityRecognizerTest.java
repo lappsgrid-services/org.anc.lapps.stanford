@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 public class NamedEntityRecognizerTest
 {
 
-   @Ignore
+   @Test
    public void testSANamedEntityRecognizer() throws IOException, LappsException
    {
       String text = ResourceLoader.loadString("Bartok.txt");
@@ -59,9 +59,8 @@ public class NamedEntityRecognizerTest
    @Test
    public void testMetadata()
    {
-      WebService tokenizer = new NamedEntityRecognizer();
-      Data<Void> command = new Data<Void>(Uri.GETMETADATA);
-      String result = tokenizer.execute(command.asJson());
+      WebService service = new NamedEntityRecognizer();
+      String result = service.getMetadata();
       assertNotNull("NamedEntityRecognizer did not return metadata", result);
       Data<Object> data = Serializer.parse(result, Data.class);
       assertNotNull("Unable to parse metadata.", data);
