@@ -72,14 +72,26 @@ public abstract class AbstractStanfordService implements WebService
       return new Error(message).asPrettyJson();
    }
 
+   private InputStream openStream(Class<?> serviceClass)
+   {
+      String resourceName = "metadata/" + serviceClass.getName() + ".json";
+      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
+      if (inputStream != null)
+      {
+         return inputStream;
+      }
+      return this.getClass().getClass().getResourceAsStream("/" + resourceName);
+   }
+
    private void loadMetadata(Class<?> serviceClass) throws IOException
    {
 //      ClassLoader loader = ResourceLoader.getClassLoader();
-      String resourceName = "/metadata/" + serviceClass.getName() + ".json";
-      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
+//      String resourceName = "/metadata/" + serviceClass.getName() + ".json";
+//      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
+      InputStream inputStream = openStream(serviceClass);
       if (inputStream == null)
       {
-			String message = "Unable to load resource " + resourceName;
+			String message = "Unable to load resource for " + serviceClass.getName();
 			logger.error(message);
          throw new IOException(message);
       }
@@ -92,10 +104,11 @@ public abstract class AbstractStanfordService implements WebService
          Data<String> data = new Data<>(Uri.META, content);
          metadata = data.asJson();
 			logger.info("Loaded metadata.");
+//         System.out.println(content);
       }
       catch (IOException e)
       {
-			String message = "Unable to load metadata from " + resourceName;
+			String message = "Unable to load metadata for " + serviceClass.getName();
          logger.error(message, e);
          metadata = Serializer.toPrettyJson(new Error(message));
          throw e;
