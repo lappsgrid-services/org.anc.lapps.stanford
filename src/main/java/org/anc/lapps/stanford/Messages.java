@@ -22,7 +22,9 @@ package org.anc.lapps.stanford;
 public final class Messages
 {
    public static final String BUSY = "The service is currently busy.  Please try again shortly.";
-
+   public static final String MISSING_DISCRIMINATOR = "Invalid input: no discriminator specified.";
+   public static final String MISSING_PAYLOAD = "Invalid input: no payload found.";
+   public static final String UNSUPPORTED_INPUT_TYPE = "Unsupported input type: ";
    private Messages()
    {
 

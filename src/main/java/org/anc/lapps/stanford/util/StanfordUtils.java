@@ -16,32 +16,30 @@
  */
 package org.anc.lapps.stanford.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.anc.lapps.serialization.Annotation;
-import org.anc.lapps.serialization.Container;
-import org.anc.lapps.serialization.ProcessingStep;
+import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.LappsCoreLabel;
-import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.discriminator.Types;
-import org.lappsgrid.vocabulary.Annotations;
-import org.lappsgrid.vocabulary.Contents;
+//import org.lappsgrid.serialization.Annotation;
+//import org.lappsgrid.serialization.Container;
+//import org.lappsgrid.serialization.View;
+import org.lappsgrid.discriminator.Constants;
+import org.lappsgrid.serialization.lif.Annotation;
+import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
-import org.lappsgrid.vocabulary.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.stanford.nlp.ling.CoreLabel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class StanfordUtils
 {
    private static final Logger logger = LoggerFactory.getLogger(StanfordUtils.class);
 
-   public static ProcessingStep findStep(List<ProcessingStep> steps, final String annotation)
+   public static View findStep(List<View> steps, final String annotation)
    {
-      for (ProcessingStep step : steps)
+      for (View step : steps)
       {
          if (contains(step, annotation))
          {
@@ -51,9 +49,9 @@ public class StanfordUtils
       return null;
    }
 
-   public static boolean contains(ProcessingStep step, final String annotation)
+   public static boolean contains(View view, final String annotation)
    {
-      Map metadata = step.getMetadata();
+      Map metadata = view.getMetadata();
       Map contains = (Map) metadata.get("contains");
       return contains == null ? false : contains.get(annotation) != null;
 //      if (contains.contains(annotation))
@@ -72,37 +70,19 @@ public class StanfordUtils
 
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)
    {
-      List<ProcessingStep> steps = container.getSteps();
-//      ProcessingStep taggedStep = null;
-//      for (int i = steps.size() - 1; i >= 0; i--)
+//      List<View> steps = container.getViews();
+//      View taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
+//      if (taggedStep == null)
 //      {
-//         ProcessingStep step = container.getSteps().get(i);
-//         boolean hasTags = false;
-//         String contains = (String) step.getMetadata().get("contains");
-//         if (contains != null)
-//         {
-//            hasTags = contains.contains("POS");
-//         }
-//         else
-//         {
-//            String producedBy = (String) step.getMetadata().get(Metadata.PRODUCED_BY);
-//            hasTags = producedBy.toLowerCase().contains("tagger");
-//         }
-//
-//         if (hasTags)
-//         {
-//            taggedStep = step;
-//            break;
-//         }
+//         return null;
 //      }
-      ProcessingStep taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
-      if (taggedStep == null)
-      {
-         return null; 
-      }
-      
-      List<Annotation> annotations = taggedStep.getAnnotations();
+      List<View> views = container.findViewsThatContain(Constants.Uri.POS);
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
+      if (views == null || views.size() == 0) {
+         return labels;
+      }
+      View taggedStep = views.get(0);
+      List<Annotation> annotations = taggedStep.getAnnotations();
       for (Annotation a : annotations)
       {
          labels.add(new LappsCoreLabel(a));

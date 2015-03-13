@@ -3,7 +3,7 @@
 <beans>
   <bean id="target" class="jp.go.nict.langrid.servicecontainer.handler.TargetServiceFactory" >
     <property name="service">
-      <bean class="org.anc.lapps.stanford.SATokenizer" />
+      <bean class="org.anc.lapps.stanford.Tagger" />
     </property>
   </bean>
 </beans>
