@@ -20,8 +20,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 
-
-@Ignore
+//@Ignore
 public class TokenizerTest
 {
    private WebService service;
