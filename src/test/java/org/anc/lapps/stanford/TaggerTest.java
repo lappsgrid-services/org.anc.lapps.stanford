@@ -92,7 +92,7 @@ public class TaggerTest
       assertNotNull("getMetadata() returned null.", json);
       Data data = Serializer.parse(json, Data.class);
       assertTrue("Wrong return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.META));
-      ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
+      ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
       TestUtils.check(Tagger.class.getName(), metadata.getName());
       TestUtils.check(Version.getVersion(), metadata.getVersion());

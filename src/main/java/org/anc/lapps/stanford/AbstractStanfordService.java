@@ -21,6 +21,7 @@ import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.*;
 import org.lappsgrid.experimental.annotations.CommonMetadata;
+import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Error;
 import org.lappsgrid.serialization.Serializer;
@@ -75,12 +76,15 @@ public abstract class AbstractStanfordService implements WebService
    private InputStream openStream(Class<?> serviceClass)
    {
       String resourceName = "metadata/" + serviceClass.getName() + ".json";
-      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
+//      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
+      ClassLoader loader = AbstractStanfordService.class.getClassLoader();
+      InputStream inputStream = loader.getResourceAsStream(resourceName);
       if (inputStream != null)
       {
          return inputStream;
       }
-      return this.getClass().getClass().getResourceAsStream("/" + resourceName);
+      return null;
+//      return this.getClass().getClass().getResourceAsStream("/" + resourceName);
    }
 
    private void loadMetadata(Class<?> serviceClass) throws IOException
@@ -101,8 +105,9 @@ public abstract class AbstractStanfordService implements WebService
       {
          reader = new UTF8Reader(inputStream);
          String content = reader.readString();
-         Data<String> data = new Data<>(Uri.META, content);
-         metadata = data.asJson();
+         ServiceMetadata metadata = Serializer.parse(content, ServiceMetadata.class);
+         Data<ServiceMetadata> data = new Data<>(Uri.META, metadata);
+         this.metadata = data.asJson();
 			logger.info("Loaded metadata.");
 //         System.out.println(content);
       }

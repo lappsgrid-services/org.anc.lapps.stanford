@@ -87,13 +87,11 @@ public class SentenceSplitterTests
 		assertFalse(data.getPayload().toString(), TestUtils.isError(data));
 		TestUtils.check(Uri.META, data.getDiscriminator());
 
-		ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
+		ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
 		assertNotNull("Unable to parse metadata.", metadata);
 
 		TestUtils.check("http://www.anc.org", metadata.getVendor());
 		TestUtils.check(Version.getVersion(), metadata.getVersion());
 		TestUtils.check(SentenceSplitter.class.getName(), metadata.getName());
-//		System.out.println(data.getPayload().getClass().getName());
-		//ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
 	}
 }

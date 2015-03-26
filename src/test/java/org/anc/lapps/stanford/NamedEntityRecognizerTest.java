@@ -66,7 +66,7 @@ public class NamedEntityRecognizerTest
       assertNotNull("Unable to parse metadata.", data);
       assertFalse(data.getPayload().toString(), TestUtils.isError(data));
       assertTrue("Wrong data type returned", TestUtils.isa(data, Uri.META));
-      ServiceMetadata metadata = Serializer.parse(data.getPayload().toString(), ServiceMetadata.class);
+      ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
       TestUtils.check(NamedEntityRecognizer.class.getName(), metadata.getName());
       TestUtils.check("http://www.anc.org", metadata.getVendor());
