@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -63,6 +64,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
    protected BlockingQueue<AbstractSequenceClassifier> pool;
    protected Throwable savedException = null;
    protected String exceptionMessage = null;
+   protected HashMap<String,String> nameMap = new HashMap<>();
 
    public NamedEntityRecognizer()
    {
@@ -75,8 +77,13 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          {
             pool.add(CRFClassifier.getClassifier(classifierPath));
          }
+         mapNames(Uri.PERSON, "person", "Person", "PERSON");
+         mapNames(Uri.LOCATION, "location", "Location", "LOCATION");
+         mapNames(Uri.ORGANIZATION, "org", "organization", "ORGANIZATION");
+         mapNames(Uri.DATE, "data", "Date", "DATE");
          logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
       }
+
       catch (OutOfMemoryError e)
       {
          logger.error("Ran out of memory creating the CRFClassifier.", e);
@@ -88,7 +95,15 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          savedException = e;
       }
    }
-   
+
+   private void mapNames(String uri, String... names)
+   {
+      for (String name : names)
+      {
+         nameMap.put(name, uri);
+      }
+   }
+
    @Override
    public String execute(String input)
    {
@@ -228,9 +243,15 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
    private String correctCase(String item)
    {
-      String head = item.substring(0, 1);
-      String tail = item.substring(1).toLowerCase();
-      return head + tail;
+//      String head = item.substring(0, 1);
+//      String tail = item.substring(1).toLowerCase();
+//      return head + tail;
+      String uri = nameMap.get(item);
+      if (uri == null)
+      {
+         return item;
+      }
+      return uri;
    }
 
    private void add(Map<String,String> features, String name, String value)
