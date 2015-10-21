@@ -211,7 +211,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             if (!ner.equals(invalidNer))
             {
                Annotation annotation = new Annotation();
-               annotation.setLabel(correctCase(ner));
+               annotation.setAtType(correctCase(ner));
+               annotation.setLabel(ner);
                annotation.setId(id.generate("ne"));
                long start = label.beginPosition();
                long end = label.endPosition();
