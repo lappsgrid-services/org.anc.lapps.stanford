@@ -133,7 +133,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 				logger.info("Loaded metadata");
 				//System.out.println(json);
 				break;
-         case Uri.JSON: // fall through.
+         case Uri.LAPPS:   // fall through
+         case Uri.JSON:
          case Uri.JSON_LD:
 				// Nothing needs to be done other than preventing the default case.
             break;
@@ -220,7 +221,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          view.addContains(Uri.NE, producer, "ner:stanford");
          container.getViews().add(view);
       }
-      data.setDiscriminator(Uri.JSON_LD);
+      data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
       
       return Serializer.toJson(data);

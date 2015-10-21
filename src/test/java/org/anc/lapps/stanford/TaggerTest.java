@@ -51,8 +51,8 @@ public class TaggerTest
       // Call the tagger service and parse the output back into a Container object.
       json = service.execute(json);
       Data<Map> data = Serializer.parse(json, Data.class);
-
-//      assertFalse(data.getPayload().toString(), TestUtils.isError(data));
+      assertFalse(data.getPayload().toString(), TestUtils.isError(data));
+      System.out.println(data.asPrettyJson());
       Container container = new Container(data.getPayload());
 
       List<View> views = container.getViews();

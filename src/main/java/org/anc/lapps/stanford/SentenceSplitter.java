@@ -105,7 +105,8 @@ public class SentenceSplitter extends AbstractStanfordService
                container.setText(data.getPayload().toString());
             }
             break;
-         case Uri.JSON: // fall through
+         case Uri.LAPPS: // fall through
+         case Uri.JSON:
          case Uri.JSON_LD:
 //            container = Serializer.parse(payload, Container.class);
             if (data.getPayload() == null)
@@ -154,7 +155,7 @@ public class SentenceSplitter extends AbstractStanfordService
 //      view.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
       view.addContains(Uri.SENTENCE, producer, "sentence:stanford");
       container.getViews().add(view);
-      data.setDiscriminator(Uri.JSON_LD);
+      data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
       //data = DataFactory.json(container.toJson());
 

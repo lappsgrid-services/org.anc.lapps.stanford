@@ -40,7 +40,7 @@ public class NamedEntityRecognizerTest
       json = ner.execute(json);
       Data result = Serializer.parse(json, Data.class);
       assertFalse(result.getPayload().toString(), TestUtils.isError(result));
-      assertTrue("Invalid return type. Expected JSON_LD found " + result.getDiscriminator(), TestUtils.isa(result, Uri.JSON_LD));
+      assertTrue("Invalid return type. Expected LIF found " + result.getDiscriminator(), TestUtils.isa(result, Uri.LAPPS));
       Container container = new Container((Map) result.getPayload());
 
       // Ensure the container contains the views that we think it should.
