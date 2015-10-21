@@ -117,7 +117,7 @@ public class Tokenizer extends AbstractStanfordService
       container.getViews().add(view);
       map = null;
       Data<Container> data = new Data<Container>();
-      data.setDiscriminator(Uri.JSON_LD);
+      data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
       return Serializer.toJson(data);
    }
