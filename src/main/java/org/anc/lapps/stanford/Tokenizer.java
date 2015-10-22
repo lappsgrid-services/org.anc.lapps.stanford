@@ -90,6 +90,8 @@ public class Tokenizer extends AbstractStanfordService
          case Uri.JSON_LD:
             Map payloadMap = (Map) map.get("payload");
             text = payloadMap.get("text").toString();
+            container = new Container();
+            container.setText(text);
             break;
          case Uri.GETMETADATA:
             json = super.getMetadata();

@@ -9,6 +9,7 @@ import java.util.Map;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.DataContainer;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
 import org.anc.resource.ResourceLoader;
@@ -81,6 +82,21 @@ public class TokenizerTest
 //      assertTrue("Expected JSON", resultType == Types.JSON);
 //      Container container = new Container(payload);
 //      System.out.println(container.toPrettyJson());
+   }
+
+   @Test
+   public void testTokenizerWithLif()
+   {
+      Container container = new Container();
+      container.setLanguage("en-US");
+      container.setText("Goodbye cruel world, I am leaving you today.");
+      DataContainer data = new DataContainer(container);
+      WebService tokenizer = new Tokenizer();
+      String json = tokenizer.execute(data.asJson());
+      Data result = Serializer.parse(json, Data.class);
+      assertFalse(result.getPayload().toString(), result.getDiscriminator().equals(Uri.ERROR));
+      assertTrue("Wrong discriminator returned", result.getDiscriminator().equals(Uri.LAPPS));
+
    }
 
    @Test

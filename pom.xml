@@ -24,8 +24,8 @@
         <lapps.metadata.version>1.0.0</lapps.metadata.version>
         <stanford.version>3.3.0</stanford.version> <!-- Was 1.3.5 -->
         <vocabulary.version>1.0.0</vocabulary.version>
-        <discriminator.version>2.0.1</discriminator.version>
-        <serialization.version>2.0.0</serialization.version>
+        <discriminator.version>2.1.0-SNAPSHOT</discriminator.version>
+        <serialization.version>2.0.1</serialization.version>
         <anc.commons.version>3.5.0</anc.commons.version>
     </properties>
     <build>
