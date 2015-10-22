@@ -21,6 +21,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import org.anc.lapps.stanford.LappsCoreLabel;
 import org.anc.util.IDGenerator;
+import org.lappsgrid.discriminator.Discriminators;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Annotations;
@@ -68,7 +69,8 @@ public class Converter
       for (CoreLabel token : tokens)
       {
          Annotation annotation = new Annotation();
-         annotation.setLabel(Annotations.TOKEN);
+         annotation.setLabel("Token");
+         annotation.setAtType(Discriminators.Uri.TOKEN);
          annotation.setId(id.generate("tok"));
          long start = (token.beginPosition());
          long end = (token.endPosition());
@@ -130,7 +132,8 @@ public class Converter
       {
          Annotation sentenceAnnotation = new Annotation();
          sentenceAnnotation.setId(id.generate("s"));
-         sentenceAnnotation.setLabel(Annotations.SENTENCE);
+         sentenceAnnotation.setLabel("Sentence");
+         sentenceAnnotation.setAtType(Discriminators.Uri.SENTENCE);
          long start = sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
          long end = sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
          sentenceAnnotation.setStart(start);

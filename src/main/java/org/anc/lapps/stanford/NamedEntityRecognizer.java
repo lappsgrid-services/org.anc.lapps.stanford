@@ -34,8 +34,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -188,6 +190,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
       if (classifiedLabels != null)
       {
+         Set<String> types = new HashSet<String>();
          IDGenerator id = new IDGenerator();
          View view = new View();
          String invalidNer = "O";
@@ -197,7 +200,11 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             if (!ner.equals(invalidNer))
             {
                Annotation annotation = new Annotation();
-               annotation.setLabel(correctCase(ner));
+               String type = getUriForType(ner);
+               types.add(type);
+               annotation.setLabel(ner);
+               annotation.setAtType(type);
+//               annotation.setLabel(correctCase(ner));
                annotation.setId(id.generate("ne"));
                long start = label.beginPosition();
                long end = label.endPosition();
@@ -218,13 +225,27 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
          //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
-         view.addContains(Uri.NE, producer, "ner:stanford");
+         for (String type : types)
+         {
+            view.addContains(type, producer, "ner:stanford");
+         }
+//         view.addContains(Uri.NE, producer, "ner:stanford");
          container.getViews().add(view);
       }
       data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
       
       return Serializer.toJson(data);
+   }
+
+   private String getUriForType(String type)
+   {
+      if ("PERSON".equals(type)) return Uri.PERSON;
+      if ("DATE".equals(type)) return Uri.DATE;
+      if ("LOCATION".equals(type)) return Uri.LOCATION;
+      if ("ORGANIZATION".equals(type)) return Uri.ORGANIZATION;
+      if ("MISC".equals(type)) return Uri.NE;
+      return type;
    }
 
    private String correctCase(String item)

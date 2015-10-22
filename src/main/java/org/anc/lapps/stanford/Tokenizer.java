@@ -116,7 +116,7 @@ public class Tokenizer extends AbstractStanfordService
 
 		View view = Converter.addTokens(new View(), tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      view.addContains(Annotations.TOKEN, producer, "stanford");
+      view.addContains(Uri.TOKEN, producer, "stanford");
 //      Map<String,String> metadata = step.getMetadata();
 //      metadata.put(Metadata.PRODUCED_BY, name);
 //      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
