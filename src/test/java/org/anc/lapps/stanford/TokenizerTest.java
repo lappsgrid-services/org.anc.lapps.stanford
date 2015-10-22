@@ -72,7 +72,7 @@ public class TokenizerTest
       Object map = metadata.get("contains");
       assertNotNull("No contains section in view metadata.", map);
       Contains contains = view.getContains(Uri.TOKEN);
-      System.out.println(contains.getProducer());
+//      System.out.println(contains.getProducer());
 //      Discriminator discriminator = DiscriminatorRegistry.getByUri(result.getDiscriminator());
 //      long resultType = discriminator.getId();
 //      String payload = result.getPayload();

@@ -52,7 +52,7 @@ public class TaggerTest
       json = service.execute(json);
       Data<Map> data = Serializer.parse(json, Data.class);
       assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-      System.out.println(data.asPrettyJson());
+//      System.out.println(data.asPrettyJson());
       Container container = new Container(data.getPayload());
 
       List<View> views = container.getViews();
@@ -70,7 +70,7 @@ public class TaggerTest
          }
       }
 
-      System.out.println(views.get(0));
+//      System.out.println(views.get(0));
       views = container.findViewsThatContain(Uri.TOKEN);
       assertNotNull("Find token views returned null.", views);
       assertTrue("Wrong number of token views. Expected 1 found " + views.size(), views.size() == 1);
