@@ -85,6 +85,12 @@ public class Tokenizer extends AbstractStanfordService
             container = new Container();
             container.setText(text);
             break;
+         case Uri.LAPPS:
+         case Uri.JSON:
+         case Uri.JSON_LD:
+            Map payloadMap = (Map) map.get("payload");
+            text = payloadMap.get("text").toString();
+            break;
          case Uri.GETMETADATA:
             json = super.getMetadata();
             break;
@@ -110,14 +116,14 @@ public class Tokenizer extends AbstractStanfordService
 
 		View view = Converter.addTokens(new View(), tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-      view.addContains(Annotations.TOKEN, producer, "stanford");
+      view.addContains(Uri.TOKEN, producer, "stanford");
 //      Map<String,String> metadata = step.getMetadata();
 //      metadata.put(Metadata.PRODUCED_BY, name);
 //      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
       container.getViews().add(view);
       map = null;
       Data<Container> data = new Data<Container>();
-      data.setDiscriminator(Uri.JSON_LD);
+      data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
       return Serializer.toJson(data);
    }

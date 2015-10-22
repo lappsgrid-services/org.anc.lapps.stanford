@@ -56,7 +56,7 @@ public class TokenizerTest
       Object payload = result.getPayload();
       assertNotNull("Null payload.", payload);
       assertFalse(payload.toString(), TestUtils.isError(result));
-      assertTrue("Expected JSON LD. Found " + result.getDiscriminator(), TestUtils.isa(result, Uri.JSON_LD));
+      assertTrue("Expected LIF. Found " + result.getDiscriminator(), TestUtils.isa(result, Uri.LAPPS));
       Container container = new Container((Map)payload);
       assertNotNull("No text in container", container.getText());
       int size = container.getViews().size();

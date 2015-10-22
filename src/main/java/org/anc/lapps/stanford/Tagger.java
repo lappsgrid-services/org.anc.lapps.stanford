@@ -107,7 +107,8 @@ public class Tagger extends AbstractStanfordService
          case Uri.GETMETADATA:
             json = super.getMetadata();
             break;
-         case Uri.JSON: // fall through
+         case Uri.LAPPS: // fall through
+         case Uri.JSON:
          case Uri.JSON_LD:
             container = new Container(data.getPayload());
             if (container == null)
@@ -181,7 +182,7 @@ public class Tagger extends AbstractStanfordService
 //      data.setDiscriminator(Constants.Uri.JSON_LD);
 //      data.setPayload(container);
 //      return data.asJson();
-      return new Data<Container>(Uri.JSON_LD, container).asJson();
+      return new Data<Container>(Uri.LAPPS, container).asJson();
    }
    
 //   @Override
