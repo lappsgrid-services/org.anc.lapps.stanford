@@ -6,7 +6,6 @@ branches:
     only:
         - develop
         - master
-        - feature/v2.0.0
 before_install:
     - curl -O http://www.anc.org/tools/settings.xml
     - curl -O http://www.anc.org/tools/english.conll.4class.distsim.crf.ser.gz

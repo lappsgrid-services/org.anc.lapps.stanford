@@ -18,14 +18,11 @@ package org.anc.lapps.stanford.util;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.LappsCoreLabel;
-//import org.lappsgrid.serialization.Annotation;
-//import org.lappsgrid.serialization.Container;
-//import org.lappsgrid.serialization.View;
-import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.serialization.lif.View;
-import org.lappsgrid.vocabulary.Features;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +73,7 @@ public class StanfordUtils
 //      {
 //         return null;
 //      }
-      List<View> views = container.findViewsThatContain(Constants.Uri.POS);
+      List<View> views = container.findViewsThatContain(Uri.POS);
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       if (views == null || views.size() == 0) {
          return labels;

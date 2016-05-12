@@ -1,6 +1,7 @@
 package org.anc.lapps.stanford;
 
-import org.lappsgrid.discriminator.Constants;
+//import org.lappsgrid.discriminator.Constants;
+import static org.lappsgrid.discriminator.Discriminators.Uri;
 import org.lappsgrid.serialization.Data;
 
 import static org.junit.Assert.fail;
@@ -31,7 +32,7 @@ public class TestUtils
 
 	public static boolean isError(String url)
 	{
-		return Constants.Uri.ERROR.equals(url);
+		return Uri.ERROR.equals(url);
 	}
 
 	public static boolean isa(Data<?> data, String type)
