@@ -1,8 +1,8 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
-  "name" : "Stanford Named Entity Recognizer",
+  "name" : "org.anc.lapps.stanford.SelectableNamedEntityRecognizer",
   "version" : "2.1.0-SNAPSHOT",
-  "description" : "Stanford Named Entity Recognizer",
+  "description" : "Stanford Named Entity Recognizer (Selectable)",
   "vendor" : "http://www.anc.org",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
   "license" : "http://vocab.lappsgrid.org/ns/license#apache-2.0",

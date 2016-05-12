@@ -20,8 +20,8 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import org.anc.lapps.stanford.util.Converter;
-import org.lappsgrid.discriminator.Constants;
-import org.lappsgrid.experimental.annotations.ServiceMetadata;
+//import org.lappsgrid.discriminator.Constants;
+import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.View;
@@ -39,6 +39,7 @@ import java.util.Map;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
+        name = "Stanford Tokenizer",
         description = "Stanford Tokenizer",
         produces = "token"
 )

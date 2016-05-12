@@ -11,6 +11,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.DataContainer;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
@@ -54,12 +55,12 @@ public class SentenceSplitterTests
 		String json = service.execute(input);
 
 		assertNotNull("Service returned null", json);
-		Data data = Serializer.parse(json, Data.class);
+		DataContainer data = Serializer.parse(json, DataContainer.class);
 		assertNotNull("Unable to parse response.", data);
 		assertFalse(data.getPayload().toString(), TestUtils.isError(data));
-		assertTrue("Invalid return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.JSON_LD));
+		assertTrue("Invalid return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.LIF));
 
-		Container container = new Container((Map)data.getPayload());
+		Container container = data.getPayload();
 		List<View> views = container.getViews();
 		// There should be two views: one view with tokens and a second with sentences.
 		assertTrue("Wrong number of views. Expected 1 found " + views.size(), views.size() == 1);
@@ -92,6 +93,6 @@ public class SentenceSplitterTests
 
 		TestUtils.check("http://www.anc.org", metadata.getVendor());
 		TestUtils.check(Version.getVersion(), metadata.getVersion());
-		TestUtils.check(SentenceSplitter.class.getName(), metadata.getName());
+//		TestUtils.check(SentenceSplitter.class.getName(), metadata.getName());
 	}
 }

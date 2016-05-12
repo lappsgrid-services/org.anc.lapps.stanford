@@ -10,6 +10,7 @@ import java.util.List;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.DataContainer;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.Container;
 import org.anc.resource.ResourceLoader;
@@ -50,10 +51,11 @@ public class TaggerTest
 
       // Call the tagger service and parse the output back into a Container object.
       json = service.execute(json);
-      Data<Map> data = Serializer.parse(json, Data.class);
+      DataContainer data = Serializer.parse(json, DataContainer.class);
       assertFalse(data.getPayload().toString(), TestUtils.isError(data));
 //      System.out.println(data.asPrettyJson());
-      Container container = new Container(data.getPayload());
+//      Container container = new Container(data.getPayload());
+      Container container = data.getPayload();
 
       List<View> views = container.getViews();
       assertTrue("Wrong number of views. Expected 2 found " + views.size(), views.size() == 2);
@@ -94,7 +96,7 @@ public class TaggerTest
       assertTrue("Wrong return type: " + data.getDiscriminator(), TestUtils.isa(data, Uri.META));
       ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
-      TestUtils.check(Tagger.class.getName(), metadata.getName());
+//      TestUtils.check(Tagger.class.getName(), metadata.getName());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
       TestUtils.check("http://www.anc.org", metadata.getVendor());
    }

@@ -20,7 +20,7 @@ import org.anc.io.UTF8Reader;
 import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.discriminator.*;
-import org.lappsgrid.experimental.annotations.CommonMetadata;
+import org.lappsgrid.annotations.CommonMetadata;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Error;
@@ -39,7 +39,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 @CommonMetadata(
 	vendor = "http://www.anc.org",
 	license = "apache2",
-	format = "lapps",
+	format = "lif",
 	language = "en"
 )
 public abstract class AbstractStanfordService implements WebService

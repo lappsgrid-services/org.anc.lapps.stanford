@@ -27,6 +27,9 @@ public class PathConstants extends Constants
    @Default("/usr/share/lapps/stanford/classifiers/english.conll.4class.distsim.crf.ser.gz")
    public final String NER_MODEL_PATH = null;
 
+   @Default("/usr/share/lapps/stanford/classifiers")
+   public final String NER_MODEL_ROOT = null;
+
    @Default("/usr/share/lapps/stanford/models/english-bidirectional-distsim.tagger")
    public final String TAGGER_MODEL_PATH = null;
 

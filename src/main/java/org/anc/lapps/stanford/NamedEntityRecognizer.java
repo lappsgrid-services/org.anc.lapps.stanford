@@ -23,7 +23,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.AnswerAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.util.IDGenerator;
-import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.*;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
+        name = "Stanford Named Entity Recognizer",
         description = "Stanford Named Entity Recognizer",
         requires = "token",
         produces = {"date", "person", "location", "organization"}
@@ -126,7 +127,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return createError(exceptionMessage);
       }
 
-      Data data = Serializer.parse(input, Data.class);
+      DataContainer data = Serializer.parse(input, DataContainer.class);
       if (data == null)
       {
          return createError("Unable to parse input.");
@@ -165,7 +166,8 @@ public class NamedEntityRecognizer extends AbstractStanfordService
          return json;
       }
 
-      Container container = new Container((Map)data.getPayload());
+//      Container container = new Container((Map)data.getPayload());
+      Container container = data.getPayload();
       logger.info("Executing Stanford Stand-Alone Named Entity Recognizer.");
 
       List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
@@ -229,7 +231,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
                Map<String,String> features = annotation.getFeatures();
                add(features, Features.Token.LEMMA, label.lemma());
                add(features, "category", label.category());
-               add(features, Features.Token.PART_OF_SPEECH, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+               add(features, Features.Token.POS, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
                add(features, "ner", label.ner());
                add(features, "word", label.word());
