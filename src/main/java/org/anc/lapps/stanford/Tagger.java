@@ -23,7 +23,7 @@ import org.anc.resource.ResourceLoader;
 import org.lappsgrid.api.LappsException;
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
-import org.lappsgrid.experimental.annotations.ServiceMetadata;
+import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
+        name = "Stanford Tagger",
         description = "Stanford Part of Speech Tagger",
         requires = {"token"},
         produces = {"pos"}
@@ -132,13 +133,13 @@ public class Tagger extends AbstractStanfordService
 //         logger.warn("No tokens were found in any processing step");
 //         return createError("Unable to process input; no tokens found.");
 //      }
-      List<View> views = container.findViewsThatContain(Uri.TOKEN);
+      List views = container.findViewsThatContain(Uri.TOKEN);
       if (views == null || views.size() == 0)
       {
          logger.warn("No tokens were found in any views.");
          return createError("Unable to process input: no tokens found");
       }
-      View tokenStep = views.get(0);
+      View tokenStep = new View((Map)views.get(0));
       List<Annotation> annotations = tokenStep.getAnnotations();
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       for (Annotation a : annotations)
