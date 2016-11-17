@@ -78,6 +78,8 @@ public class StanfordUtils
       if (views == null || views.size() == 0) {
          return labels;
       }
+      //TODO use the last view found not the first.
+      // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
       View taggedStep = views.get(0);
       List<Annotation> annotations = taggedStep.getAnnotations();
       for (Annotation a : annotations)
