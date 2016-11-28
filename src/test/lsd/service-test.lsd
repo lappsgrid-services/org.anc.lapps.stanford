@@ -1,0 +1,77 @@
+#!/usr/bin/env lsd
+
+println "Launching the Docker container."
+String docker_cmd = "docker run -d -p 8080:8080 --name tomcat -v target:/var/lib/tomcat7/webapps -v /usr/local/lapps:/usr/local/lapps lappsgrid/tomcat7:1.1.0"
+docker_cmd.execute()
+
+// Wait for the docker container to start.
+sleep 2000
+
+// The service to be tested.  This is typically the same as the name of the
+// .war file that was deployed to Tomcat.
+SERVICE = "StanfordServices/2.1.1-SNAPSHOT"
+
+// Create some data for testing.
+String json = new Data(Uri.TEXT, 'Goodbye cruel world. I am leaving you today.').asJson()
+
+// Helper to create service clients given the service type (tokenizer, tagger, etc)
+def serviceFactory = { type ->
+    String url = "http://localhost:8080/$SERVICE/services/$type"
+    return new ServiceClient(url)
+}
+
+ServiceClient tokenizer = serviceFactory('Tokenizer')
+ServiceClient splitter = serviceFactory('SentenceSplitter')
+ServiceClient tagger = serviceFactory('Tagger')
+
+println "Runing tokenizer"
+json = tokenizer.execute(json)
+
+println "Running splitter"
+json = splitter.execute(json)
+
+println "Running tagger"
+json = tagger.execute(json)
+
+println "Parsing results"
+DataContainer dc = Serializer.parse(json, DataContainer)
+container = dc.payload
+
+// After processing we should have three views (one per processor)
+println "Expecting three views."
+assert container.views.size() == 3
+
+// Ensure one of each type.
+[Uri.TOKEN, Uri.SENTENCE, Uri.POS].each {
+    //println "Asserting only one view with $type"
+    //assert container.views.findAll { it.metadata.contains[type] }?.size() == 1
+    expect it
+}
+
+println "Expecting 10 tokens (including punctuation)."
+expect 10, Uri.TOKEN
+
+println "Expecting two sentences."
+expect 2, Uri.SENTENCE
+
+println "Expecting 10 part of speech tags."
+expect 10, Uri.POS
+
+println "All tests passed."
+
+println "Shutting down the Docker the container."
+"docker rm -f tomcat".execute()
+
+println "Done"
+return
+
+void expect(String type) {
+    println "Asserting only one view with $type"
+    assert container.views.findAll { it.metadata.contains[type] }?.size() == 1
+}
+
+void expect(int value, String type) {
+    View view = container.views.find { it.metadata.contains[type] }
+    assert value == view?.annotations?.size()
+}
+

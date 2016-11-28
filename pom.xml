@@ -9,8 +9,8 @@
     </parent>
     <groupId>org.anc.lapps.stanford</groupId>
     <artifactId>core-nlp</artifactId>
-    <version>2.1.0</version>
-    <packaging>jar</packaging>
+    <version>2.1.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>Services: Stanford</name>
     <description>LAPPS wrapper for the core Stanford NLP tools.</description>
     <url>https://github.com/oanc/org.anc.lapps.stanford</url>
