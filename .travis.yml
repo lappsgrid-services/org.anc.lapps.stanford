@@ -11,8 +11,8 @@ before_install:
     - curl -O http://downloads.lappsgrid.org/stanford-models.tgz
     - tar xzf stanford-models.tgz
     - sudo mkdir -p /usr/share/lapps/
+    - sudo chmod 777 /usr/share/lapps
     - mv stanford /usr/share/lapps
-    - sudo chmod -R +r /usr/share/lapps
 install:
     - mvn anc:version --settings settings.xml
     - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V --settings settings.xml
