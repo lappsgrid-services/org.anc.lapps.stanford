@@ -8,8 +8,7 @@ branches:
         - master
 before_install:
     - curl -O http://www.anc.org/tools/settings.xml
-    - curl -O http://downloads.lappsgrid.org/standford-models.tgz
-    - if [ ! which tar ] ; then apt-get install -y tar ; fi
+    - curl -O http://downloads.lappsgrid.org/stanford-models.tgz
     - tar xzf stanford-models.tgz
     - sudo mkdir -p /usr/share/lapps/
     - mv stanford /usr/share/lapps
