@@ -43,8 +43,6 @@ assert container.views.size() == 3
 
 // Ensure one of each type.
 [Uri.TOKEN, Uri.SENTENCE, Uri.POS].each {
-    //println "Asserting only one view with $type"
-    //assert container.views.findAll { it.metadata.contains[type] }?.size() == 1
     expect it
 }
 
