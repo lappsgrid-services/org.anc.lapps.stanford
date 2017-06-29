@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.lappsgrid.maven</groupId>
         <artifactId>war-parent-pom</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.5</version>
     </parent>
     <groupId>org.anc.lapps.stanford</groupId>
     <artifactId>core-nlp</artifactId>
-    <version>2.1.1-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>Services: Stanford</name>
     <description>LAPPS wrapper for the core Stanford NLP tools.</description>
@@ -74,26 +74,30 @@
                     <argLine>-Xmx4G</argLine>
                 </configuration>
             </plugin>
-            <!--
             <plugin>
                 <groupId>org.anc.maven.plugins</groupId>
                 <artifactId>anc-maven-plugin</artifactId>
                 <version>1.0.6</version>
                 <executions>
                     <execution>
-                        <id>generate-version</id>
+                        <id>version-class</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>version</goal>
                             <goal>version-class</goal>
                         </goals>
                         <configuration>
                             <package>org.anc.lapps.stanford</package>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>version-file</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>version</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
-            -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
