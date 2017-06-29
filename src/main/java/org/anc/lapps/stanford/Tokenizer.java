@@ -41,7 +41,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 @ServiceMetadata(
         name = "Stanford Tokenizer",
         description = "Stanford Tokenizer",
-        produces = "token"
+        produces = "token",
+        requires_format = { "lif", "text" }
 )
 public class Tokenizer extends AbstractStanfordService
 {

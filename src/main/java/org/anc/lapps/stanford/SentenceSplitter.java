@@ -42,7 +42,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 @ServiceMetadata(
         description = "Stanford Sentence Splitter",
-        produces = { "sentence", "token" },
+        produces = { "sentence" },
         requires_format = { "text", "json", "jsonld" }
 )
 public class SentenceSplitter extends AbstractStanfordService
