@@ -41,7 +41,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 @ServiceMetadata(
         name = "Stanford Tokenizer",
         description = "Stanford Tokenizer",
-        produces = "token"
+        produces = "token",
+        requires_format = { "lif", "text" }
 )
 public class Tokenizer extends AbstractStanfordService
 {
@@ -119,6 +120,8 @@ public class Tokenizer extends AbstractStanfordService
 
 		View view = Converter.addTokens(new View(), tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
+      //TODO The type field should be set to something more appropriate.
+      // See https://github.com/oanc/org.anc.lapps.stanford/issues/4
       view.addContains(Uri.TOKEN, producer, "stanford");
 //      Map<String,String> metadata = step.getMetadata();
 //      metadata.put(Metadata.PRODUCED_BY, name);

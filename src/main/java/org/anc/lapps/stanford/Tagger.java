@@ -139,6 +139,8 @@ public class Tagger extends AbstractStanfordService
          logger.warn("No tokens were found in any views.");
          return createError("Unable to process input: no tokens found");
       }
+      //TODO use the last view found not the first.
+      // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
       View tokenStep = new View((Map)views.get(0));
       List<Annotation> annotations = tokenStep.getAnnotations();
       List<CoreLabel> labels = new ArrayList<CoreLabel>();

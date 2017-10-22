@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 
 import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
+import org.lappsgrid.metadata.IOSpecification;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.DataContainer;
@@ -93,6 +94,23 @@ public class SentenceSplitterTests
 
 		TestUtils.check("http://www.anc.org", metadata.getVendor());
 		TestUtils.check(Version.getVersion(), metadata.getVersion());
+
+		IOSpecification io = metadata.getProduces();
+		List<String> annotations = io.getAnnotations();
+		assert 1 == annotations.size();
+		assert Uri.SENTENCE.equals(annotations.get(0));
+		List<String> formats = io.getFormat();
+		assert 1 == formats.size();
+		assert Uri.LIF.equals(formats.get(0));
+
+		io = metadata.getRequires();
+		//io.getFormat().stream().forEach(System.out::println);
+		formats = io.getFormat();
+		assert 3 == formats.size();
+		assert formats.contains(Uri.LIF);
+		assert formats.contains(Uri.TEXT);
+		assert formats.contains(Uri.JSON);
+
 //		TestUtils.check(SentenceSplitter.class.getName(), metadata.getName());
 	}
 }

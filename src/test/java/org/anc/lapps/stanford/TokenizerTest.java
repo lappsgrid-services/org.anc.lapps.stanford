@@ -4,9 +4,12 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
+
+import org.lappsgrid.metadata.IOSpecification;
 import org.lappsgrid.metadata.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.DataContainer;
@@ -115,6 +118,16 @@ public class TokenizerTest
       TestUtils.check("http://www.anc.org", metadata.getVendor());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
 
+      IOSpecification io = metadata.getRequires();
+      List<String> formats = io.getFormat();
+      assert 2 == formats.size();
+      assert formats.contains(Uri.TEXT);
+      assert formats.contains(Uri.LIF);
+
+      io = metadata.getProduces();
+      formats = io.getFormat();
+      assert 1 == formats.size();
+      assert Uri.LIF.equals(formats.get(0));
    }
 
 //   private void check(String expected, String actual)
