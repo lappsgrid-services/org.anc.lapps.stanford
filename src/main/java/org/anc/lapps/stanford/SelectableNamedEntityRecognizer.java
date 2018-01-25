@@ -178,7 +178,7 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 
 		if (labels == null || labels.size() == 0)
 		{
-			String message = "Unable to initialize a list of Stanford CoreLabels.";
+			String message = "INVALID INPUT: Unable to find Tokens with POS tags.";
 			logger.warn(message);
 			return createError(message);
 		}

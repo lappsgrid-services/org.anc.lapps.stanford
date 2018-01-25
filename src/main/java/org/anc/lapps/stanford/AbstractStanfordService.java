@@ -38,7 +38,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 @CommonMetadata(
 	vendor = "http://www.anc.org",
-	license = "apache2",
+	license = "gpl3",
 	format = "lif",
 	language = "en"
 )
