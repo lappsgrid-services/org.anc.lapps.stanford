@@ -21,5 +21,9 @@ VERSION
 src/main/java/org/anc/lapps/stanford/Version.java
 
 # Metadata is generated during the compile phase.
-src/main/resources/metadata/
+src/main/resources/metadata/*.json
+
+# Ignore packages used for the Docker build
+src/docker/*.tgz
+src/docker/*.zip
 

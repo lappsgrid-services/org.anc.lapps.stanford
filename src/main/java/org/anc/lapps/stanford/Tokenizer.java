@@ -41,7 +41,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 @ServiceMetadata(
         name = "Stanford Tokenizer",
         description = "Stanford Tokenizer",
-        produces = "token"
+        produces = "token",
+        requires_format = { "lif", "text" }
 )
 public class Tokenizer extends AbstractStanfordService
 {
@@ -86,13 +87,15 @@ public class Tokenizer extends AbstractStanfordService
             container = new Container();
             container.setText(text);
             break;
-         case Uri.LAPPS:
-         case Uri.JSON:
-         case Uri.JSON_LD:
-            Map payloadMap = (Map) map.get("payload");
-            text = payloadMap.get("text").toString();
-            container = new Container();
-            container.setText(text);
+         case Uri.LIF:
+//         case Uri.JSON:
+//         case Uri.JSON_LD:
+//            Map payloadMap = (Map) map.get("payload");
+//            text = payloadMap.get("text").toString();
+//            container = new Container();
+//            container.setText(text);
+            container = new Container((Map)map.get("payload"));
+            text = container.getText();
             break;
          case Uri.GETMETADATA:
             json = super.getMetadata();
@@ -117,7 +120,7 @@ public class Tokenizer extends AbstractStanfordService
          return createError("PTBTokenizer returned no tokens.");
       }
 
-		View view = Converter.addTokens(new View(), tokens);
+      View view = Converter.addTokens(new View(), tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       //TODO The type field should be set to something more appropriate.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/4

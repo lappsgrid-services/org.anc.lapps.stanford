@@ -10,9 +10,9 @@ before_install:
     - curl -O http://www.anc.org/tools/settings.xml
     - curl -O http://downloads.lappsgrid.org/stanford-models.tgz
     - tar xzf stanford-models.tgz
-    - sudo mkdir -p /usr/share/lapps/
-    - sudo chmod 777 /usr/share/lapps
-    - mv stanford /usr/share/lapps
+    - sudo mkdir -p /usr/local/lapps/
+    - sudo chmod 777 /usr/local/lapps
+    - mv stanford /usr/local/lapps
 install:
     - mvn anc:version --settings settings.xml
     - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V --settings settings.xml
