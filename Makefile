@@ -3,6 +3,10 @@ WAR=StanfordServices\#$(VERSION).war
 
 include ../master.mk
 
+docker:
+	cd src/docker && ./build.sh
+#
 run:
-	docker run -d -p 8080:8080 --name tomcat -v target:/var/lib/tomcat7/webapps -v /usr/local/lapps:/usr/local/lapps lappsgrid/tomcat7:1.1.0
-	
+	docker run -d -p 8080:8080 --name stanford lappsgrid/stanford-vassar:2.1.0
+
+

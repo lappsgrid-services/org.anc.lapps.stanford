@@ -133,7 +133,7 @@ public class Tagger extends AbstractStanfordService
 //         logger.warn("No tokens were found in any processing step");
 //         return createError("Unable to process input; no tokens found.");
 //      }
-      List views = container.findViewsThatContain(Uri.TOKEN);
+      List<View> views = container.findViewsThatContain(Uri.TOKEN);
       if (views == null || views.size() == 0)
       {
          logger.warn("No tokens were found in any views.");
@@ -141,7 +141,7 @@ public class Tagger extends AbstractStanfordService
       }
       //TODO use the last view found not the first.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
-      View tokenStep = new View((Map)views.get(0));
+      View tokenStep = views.get(0);
       List<Annotation> annotations = tokenStep.getAnnotations();
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       for (Annotation a : annotations)

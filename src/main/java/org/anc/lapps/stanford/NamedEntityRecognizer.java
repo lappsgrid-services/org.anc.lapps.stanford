@@ -228,9 +228,14 @@ public class NamedEntityRecognizer extends AbstractStanfordService
                annotation.setStart(start);
                annotation.setEnd(end);
 
+               type = label.category();
+               if (type == null)
+               {
+                  type = ner;
+               }
                Map<String,String> features = annotation.getFeatures();
                add(features, Features.Token.LEMMA, label.lemma());
-               add(features, "category", label.category());
+               add(features, "category", type);
                add(features, Features.Token.POS, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
                add(features, "ner", label.ner());

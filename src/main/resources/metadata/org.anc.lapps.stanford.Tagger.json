@@ -1,7 +1,7 @@
 {
   "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
   "name" : "Stanford Tagger",
-  "version" : "2.2.0-SNAPSHOT",
+  "version" : "2.1.0-SNAPSHOT",
   "description" : "Stanford Part of Speech Tagger",
   "vendor" : "http://www.anc.org",
   "allow" : "http://vocab.lappsgrid.org/ns/allow#any",

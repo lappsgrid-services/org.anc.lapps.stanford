@@ -49,7 +49,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
 		  description = "Stanford Named Entity Recognizer (Selectable)",
-		  requires = "token",
+		  requires = {"token","pos"},
 		  produces = {"date", "person", "location", "organization"}
 )
 public class SelectableNamedEntityRecognizer extends AbstractStanfordService
@@ -135,16 +135,11 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			return createError(exceptionMessage);
 		}
 
-		Data data = Serializer.parse(input, Data.class);
+		DataContainer data = Serializer.parse(input, DataContainer.class);
 		if (data == null)
 		{
 			return createError("Unable to parse input.");
 		}
-//      String payload = map.get("payload");
-//      if (payload == null)
-//      {
-//         return createError(Messages.MISSING_PAYLOAD);
-//      }
 
 		String discriminator = data.getDiscriminator();
 		logger.info("Discriminator is {}", discriminator);
@@ -174,7 +169,9 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			return json;
 		}
 
-		Container container = new Container((Map)data.getPayload());
+//		Container container = new Container((Map)data.getPayload());
+		Container container = data.getPayload();
+		
 		logger.info("Executing Configurable Stanford Named Entity Recognizer.");
 
 		List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
