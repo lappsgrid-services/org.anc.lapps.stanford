@@ -38,7 +38,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  */
 @CommonMetadata(
 	vendor = "http://www.anc.org",
-	license = "gpl3",
+	license = "Stanford CoreNLP is licensed under `the GNU General Public License <https://stanfordnlp.github.io/CoreNLP/#license>`_.",
 	format = "lif",
 	language = "en"
 )

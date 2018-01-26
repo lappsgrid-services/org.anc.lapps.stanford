@@ -23,6 +23,7 @@ import org.anc.lapps.stanford.util.Converter;
 //import org.lappsgrid.discriminator.Constants;
 import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.DataContainer;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.serialization.lif.Container;
@@ -94,7 +95,9 @@ public class Tokenizer extends AbstractStanfordService
 //            text = payloadMap.get("text").toString();
 //            container = new Container();
 //            container.setText(text);
-            container = new Container((Map)map.get("payload"));
+//            container = new Container((Map)map.get("payload"));
+            DataContainer data = Serializer.parse(input, DataContainer.class);
+            container = data.getPayload();
             text = container.getText();
             break;
          case Uri.GETMETADATA:

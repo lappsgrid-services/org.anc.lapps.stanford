@@ -53,7 +53,7 @@ public class NamedEntityRecognizerTest
       assertTrue("Wrong number of pos views. Expected 1 found " + views.size(), views.size() == 1);
 
 //      System.out.println(result.asPrettyJson());
-      views = container.findViewsThatContain(Uri.PERSON);
+      views = container.findViewsThatContain(Uri.NE);
       assertTrue("Wrong number of NE views. Expected 1 found " + views.size(), views.size() == 1);
    }
 

@@ -25,6 +25,7 @@ import org.lappsgrid.api.WebService;
 import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
+import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Contents;
@@ -137,7 +138,7 @@ public class Tagger extends AbstractStanfordService
       if (views == null || views.size() == 0)
       {
          logger.warn("No tokens were found in any views.");
-         return createError("Unable to process input: no tokens found");
+         return createError("INVALID INPUT: no tokens found");
       }
       //TODO use the last view found not the first.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
@@ -177,10 +178,18 @@ public class Tagger extends AbstractStanfordService
          }
       }
 
-		View step = Converter.addTokens(new View(), labels);
+      View step = null;
+      try
+      {
+         step = Converter.addTokens(container.newView(), labels);
+      }
+      catch (LifException e)
+      {
+         return DataFactory.error("Unable to create a new view", e);
+      }
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       step.addContains(Uri.POS, producer, Contents.TagSets.PENN);
-      container.getViews().add(step);
+//      container.getViews().add(step);
 
 //      data.setDiscriminator(Constants.Uri.JSON_LD);
 //      data.setPayload(container);
