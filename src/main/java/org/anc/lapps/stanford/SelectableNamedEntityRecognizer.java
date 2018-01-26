@@ -48,9 +48,9 @@ import java.util.concurrent.TimeUnit;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
-		  description = "Stanford Named Entity Recognizer (Selectable)",
-		  requires = {"token","pos"},
-		  produces = {"date", "person", "location", "organization"}
+		description = "Stanford Named Entity Recognizer (Selectable)",
+		requires = {"token","pos"},
+		produces = {"http://vocab.lappsgrid.org/NamedEntity"}
 )
 public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 {
@@ -221,10 +221,8 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 				if (!ner.equals(invalidNer))
 				{
 					Annotation annotation = new Annotation();
-					String type = getUriForType(ner);
-					types.add(type);
 					annotation.setLabel(ner);
-					annotation.setAtType(type);
+					annotation.setAtType(Uri.NE);
 //               annotation.setLabel(correctCase(ner));
 					annotation.setId(id.generate("ne"));
 					long start = label.beginPosition();
@@ -234,7 +232,7 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 
 					Map<String,String> features = annotation.getFeatures();
 					add(features, Features.Token.LEMMA, label.lemma());
-					add(features, "category", label.category());
+					add(features, Features.NamedEntity.CATEGORY, ner);
 					add(features, Features.Token.POS, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
 					add(features, "ner", label.ner());

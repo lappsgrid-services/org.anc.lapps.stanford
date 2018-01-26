@@ -4,9 +4,16 @@ WAR=StanfordServices\#$(VERSION).war
 include ../master.mk
 
 docker:
-	cd src/docker && ./build.sh
-#
+	cp target/$(WAR) src/docker
+	cd src/docker && ./docker.sh build $(VERSION)
+
+push:
+	cd src/docker && ./docker.sh push
+
+tag:
+	cd src/docker && .docker.sh tag $(VERSION)
+
 run:
-	docker run -d -p 8080:8080 --name stanford lappsgrid/stanford-vassar:2.1.0
+	docker run -d -p 8080:8080 --name stanford lappsgrid/stanford-vassar:$(VERSION)
 
 

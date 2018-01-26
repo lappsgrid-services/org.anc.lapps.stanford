@@ -49,7 +49,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
         name = "Stanford Named Entity Recognizer",
         description = "Stanford Named Entity Recognizer",
         requires = "token",
-        produces = {"date", "person", "location", "organization"}
+        produces = {"http://vocab.lappsgrid.org/NamedEntity"}
 )
 public class NamedEntityRecognizer extends AbstractStanfordService
 {
