@@ -51,36 +51,16 @@ public class StanfordUtils
       Map metadata = view.getMetadata();
       Map contains = (Map) metadata.get("contains");
       return contains == null ? false : contains.get(annotation) != null;
-//      if (contains.contains(annotation))
-//      {
-//         return true;
-//      }
-//      for (Annotation a : step.getAnnotations())
-//      {
-//         if (annotation.equals(a.getLabel()))
-//         {
-//            return true;
-//         }
-//      }
-//      return false;
    }
 
    public static List<CoreLabel> getListOfTaggedCoreLabels(Container container)
    {
-//      List<View> steps = container.getViews();
-//      View taggedStep = StanfordUtils.findStep(steps, Features.Token.PART_OF_SPEECH);
-//      if (taggedStep == null)
-//      {
-//         return null;
-//      }
       List<View> views = container.findViewsThatContain(Uri.POS);
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       if (views == null || views.size() == 0) {
          return labels;
       }
-      //TODO use the last view found not the first.
-      // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
-      View taggedStep = views.get(0);
+      View taggedStep = views.get(views.size() - 1);
       List<Annotation> annotations = taggedStep.getAnnotations();
       for (Annotation a : annotations)
       {

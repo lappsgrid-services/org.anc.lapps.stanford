@@ -119,7 +119,7 @@ public class TokenizerTest
       ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
 //      TestUtils.check(Tokenizer.class.getName(), metadata.getName());
-      TestUtils.check("http://www.anc.org", metadata.getVendor());
+      TestUtils.check("http://www.lappsgrid.org", metadata.getVendor());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
 
       IOSpecification io = metadata.getRequires();

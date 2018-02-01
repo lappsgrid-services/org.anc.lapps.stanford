@@ -126,23 +126,13 @@ public class Tagger extends AbstractStanfordService
          return json;
       }
 
-//      List<View> steps = container.getViews();
-//		View tokenStep = StanfordUtils.findStep(steps, Annotations.TOKEN);
-//
-//      if (tokenStep == null)
-//      {
-//         logger.warn("No tokens were found in any processing step");
-//         return createError("Unable to process input; no tokens found.");
-//      }
       List<View> views = container.findViewsThatContain(Uri.TOKEN);
       if (views == null || views.size() == 0)
       {
          logger.warn("No tokens were found in any views.");
          return createError("INVALID INPUT: no tokens found");
       }
-      //TODO use the last view found not the first.
-      // See https://github.com/oanc/org.anc.lapps.stanford/issues/10
-      View tokenStep = views.get(0);
+      View tokenStep = views.get(views.size() - 1);
       List<Annotation> annotations = tokenStep.getAnnotations();
       List<CoreLabel> labels = new ArrayList<CoreLabel>();
       for (Annotation a : annotations)
@@ -153,7 +143,6 @@ public class Tagger extends AbstractStanfordService
       MaxentTagger tagger = null;
       try
       {
-//         tagger = pool.take();
          tagger = pool.poll(DELAY, UNIT);
          if (tagger == null)
          {
