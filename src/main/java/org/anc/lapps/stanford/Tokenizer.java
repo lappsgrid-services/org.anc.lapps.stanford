@@ -29,6 +29,7 @@ import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.serialization.lif.Container;
 import org.lappsgrid.vocabulary.Annotations;
+import org.lappsgrid.vocabulary.Contents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +131,8 @@ public class Tokenizer extends AbstractStanfordService
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       //TODO The type field should be set to something more appropriate.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/4
-      view.addContains(Uri.TOKEN, producer, "stanford");
+      view.addContains(Uri.TOKEN, producer, Contents.Tokenizations.STANFORD);
+      container.getViews().add(view);
       map = null;
       Data<Container> data = new Data<Container>();
       data.setDiscriminator(Uri.LAPPS);
