@@ -53,7 +53,7 @@ public class NamedEntityRecognizerTest
       assertTrue("Wrong number of pos views. Expected 1 found " + views.size(), views.size() == 1);
 
 //      System.out.println(result.asPrettyJson());
-      views = container.findViewsThatContain(Uri.NE);
+      views = container.findViewsThatContain(Uri.PERSON);
       assertTrue("Wrong number of NE views. Expected 1 found " + views.size(), views.size() == 1);
    }
 
@@ -70,7 +70,7 @@ public class NamedEntityRecognizerTest
       ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
 //      TestUtils.check(NamedEntityRecognizer.class.getName(), metadata.getName());
-      TestUtils.check("http://www.lappsgrid.org", metadata.getVendor());
+      TestUtils.check("http://www.anc.org", metadata.getVendor());
       TestUtils.check(Version.getVersion(), metadata.getVersion());   }
 
 //   @Ignore

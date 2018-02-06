@@ -1,0 +1,18 @@
+{
+  "$schema" : "http://vocab.lappsgrid.org/schema/service-schema-1.0.0.json",
+  "name" : "org.anc.lapps.stanford.SentenceSplitter",
+  "version" : "2.2.0-SNAPSHOT",
+  "description" : "Stanford Sentence Splitter",
+  "vendor" : "http://www.anc.org",
+  "allow" : "http://vocab.lappsgrid.org/ns/allow#any",
+  "license" : "http://vocab.lappsgrid.org/ns/license#apache-2.0",
+  "requires" : {
+    "language" : [ "en" ],
+    "format" : [ "http://vocab.lappsgrid.org/ns/media/text", "http://vocab.lappsgrid.org/ns/media/jsonld#lif", "http://vocab.lappsgrid.org/ns/media/json" ]
+  },
+  "produces" : {
+    "language" : [ "en" ],
+    "format" : [ "http://vocab.lappsgrid.org/ns/media/jsonld#lif" ],
+    "annotations" : [ "http://vocab.lappsgrid.org/Sentence" ]
+  }
+}

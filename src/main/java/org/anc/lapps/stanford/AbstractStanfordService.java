@@ -37,9 +37,8 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Keith Suderman
  */
 @CommonMetadata(
-	vendor = "http://www.lappsgrid.org",
-	//license = "Stanford CoreNLP is licensed under `the GNU General Public License <https://stanfordnlp.github.io/CoreNLP/#license>`_.",
-    license = "gpl3",
+	vendor = "http://www.anc.org",
+	license = "apache2",
 	format = "lif",
 	language = "en"
 )
@@ -77,6 +76,7 @@ public abstract class AbstractStanfordService implements WebService
    private InputStream openStream(Class<?> serviceClass)
    {
       String resourceName = "metadata/" + serviceClass.getName() + ".json";
+//      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
       ClassLoader loader = AbstractStanfordService.class.getClassLoader();
       InputStream inputStream = loader.getResourceAsStream(resourceName);
       if (inputStream != null)
@@ -84,10 +84,14 @@ public abstract class AbstractStanfordService implements WebService
          return inputStream;
       }
       return null;
+//      return this.getClass().getClass().getResourceAsStream("/" + resourceName);
    }
 
    private void loadMetadata(Class<?> serviceClass) throws IOException
    {
+//      ClassLoader loader = ResourceLoader.getClassLoader();
+//      String resourceName = "/metadata/" + serviceClass.getName() + ".json";
+//      InputStream inputStream = this.getClass().getResourceAsStream(resourceName);
       InputStream inputStream = openStream(serviceClass);
       if (inputStream == null)
       {

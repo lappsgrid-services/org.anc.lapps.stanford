@@ -98,6 +98,6 @@ public class TaggerTest
       assertNotNull("Unable to parse metadata.", metadata);
 //      TestUtils.check(Tagger.class.getName(), metadata.getName());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
-      TestUtils.check("http://www.lappsgrid.org", metadata.getVendor());
+      TestUtils.check("http://www.anc.org", metadata.getVendor());
    }
 }
