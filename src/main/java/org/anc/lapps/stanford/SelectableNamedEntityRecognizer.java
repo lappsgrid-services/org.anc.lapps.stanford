@@ -28,6 +28,7 @@ import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.serialization.*;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
+import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
@@ -241,7 +242,8 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 				logger.info("{} produced by {}", type, producer);
 				view.addContains(type, producer, classifierName);
 			}
-         view.addContains(Uri.NE, producer, classifierName);
+         	Contains contains =view.addContains(Uri.NE, producer, classifierName);
+			contains.put("classifierName", classifierName);
 		}
 		data.setDiscriminator(Uri.LAPPS);
 		data.setPayload(container);
