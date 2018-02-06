@@ -24,11 +24,9 @@ import edu.stanford.nlp.ling.CoreLabel;
 import org.anc.lapps.stanford.util.StanfordUtils;
 import org.anc.util.IDGenerator;
 import org.lappsgrid.annotations.ServiceMetadata;
-import org.lappsgrid.core.DataFactory;
 import org.lappsgrid.serialization.*;
 import org.lappsgrid.serialization.lif.Annotation;
 import org.lappsgrid.serialization.lif.Container;
-import org.lappsgrid.serialization.lif.Contains;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.vocabulary.Features;
 import org.slf4j.Logger;
@@ -50,9 +48,9 @@ import java.util.concurrent.TimeUnit;
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
 @ServiceMetadata(
-		description = "Stanford Named Entity Recognizer (Selectable)",
-		requires = {"token","pos"},
-		produces = {"http://vocab.lappsgrid.org/NamedEntity"}
+		  description = "Stanford Named Entity Recognizer (Selectable)",
+		  requires = "token",
+		  produces = {"date", "person", "location", "organization"}
 )
 public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 {
@@ -60,7 +58,9 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 
 	private static final String classifierRoot = Constants.PATH.NER_MODEL_ROOT;
 
+	//protected AbstractSequenceClassifier classifier;
 	protected Map<String, AbstractSequenceClassifier> pool;
+//	protected BlockingQueue<AbstractSequenceClassifier> pool;
 
 	protected Throwable savedException = null;
 	protected String exceptionMessage = null;
@@ -78,24 +78,33 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 	{
 		super(SelectableNamedEntityRecognizer.class);
 		pool = new HashMap<>();
-//		try
-//		{
-//			mapNames(Uri.PERSON, "person", "Person", "PERSON");
-//			mapNames(Uri.LOCATION, "location", "Location", "LOCATION");
-//			mapNames(Uri.ORGANIZATION, "org", "organization", "ORGANIZATION");
-//			mapNames(Uri.DATE, "data", "Date", "DATE");
-//			logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
-//		}
-//		catch (OutOfMemoryError e)
-//		{
-//			logger.error("Ran out of memory creating the CRFClassifier.", e);
-//			savedException = e;
-//		}
-//		catch (Exception e)
-//		{
-//			logger.error("Unable to create the CRFClassifier.", e);
-//			savedException = e;
-//		}
+		try
+		{
+//			String[] names =
+//			File root = new File(classifierRoot);
+//			for (String name : names)
+//			{
+//				File file = new File(root, name);
+//				pool.put(name, CRFClassifier.getClassifier(file));
+//			}
+
+			mapNames(Uri.PERSON, "person", "Person", "PERSON");
+			mapNames(Uri.LOCATION, "location", "Location", "LOCATION");
+			mapNames(Uri.ORGANIZATION, "org", "organization", "ORGANIZATION");
+			mapNames(Uri.DATE, "data", "Date", "DATE");
+			logger.info("Stanford Stand-Alone Named-Entity Recognizer created.");
+		}
+
+		catch (OutOfMemoryError e)
+		{
+			logger.error("Ran out of memory creating the CRFClassifier.", e);
+			savedException = e;
+		}
+		catch (Exception e)
+		{
+			logger.error("Unable to create the CRFClassifier.", e);
+			savedException = e;
+		}
 	}
 
 	private void mapNames(String uri, String... names)
@@ -126,11 +135,16 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			return createError(exceptionMessage);
 		}
 
-		DataContainer data = Serializer.parse(input, DataContainer.class);
+		Data data = Serializer.parse(input, Data.class);
 		if (data == null)
 		{
 			return createError("Unable to parse input.");
 		}
+//      String payload = map.get("payload");
+//      if (payload == null)
+//      {
+//         return createError(Messages.MISSING_PAYLOAD);
+//      }
 
 		String discriminator = data.getDiscriminator();
 		logger.info("Discriminator is {}", discriminator);
@@ -160,16 +174,14 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			return json;
 		}
 
-//		Container container = new Container((Map)data.getPayload());
-		Container container = data.getPayload();
-		
+		Container container = new Container((Map)data.getPayload());
 		logger.info("Executing Configurable Stanford Named Entity Recognizer.");
 
 		List<CoreLabel> labels = StanfordUtils.getListOfTaggedCoreLabels(container);
 
 		if (labels == null || labels.size() == 0)
 		{
-			String message = "INVALID INPUT: Unable to find Tokens with POS tags.";
+			String message = "Unable to initialize a list of Stanford CoreLabels.";
 			logger.warn(message);
 			return createError(message);
 		}
@@ -200,18 +212,10 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 		}
 		else
 		{
-			View view = null;
-			try
-			{
-				view = container.newView();
-			}
-			catch (LifException e)
-			{
-				return DataFactory.error("CONTAINER ERROR: Unable to create a new view");
-			}
 			logger.info("There are {} labels.", classifiedLabels.size());
 			Set<String> types = new HashSet<String>();
 			IDGenerator id = new IDGenerator();
+			View view = new View();
 			String invalidNer = "O";
 			for (CoreLabel label : classifiedLabels)
 			{
@@ -220,8 +224,11 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 				if (!ner.equals(invalidNer))
 				{
 					Annotation annotation = new Annotation();
+					String type = getUriForType(ner);
+					types.add(type);
 					annotation.setLabel(ner);
-					annotation.setAtType(Uri.NE);
+					annotation.setAtType(type);
+//               annotation.setLabel(correctCase(ner));
 					annotation.setId(id.generate("ne"));
 					long start = label.beginPosition();
 					long end = label.endPosition();
@@ -230,20 +237,25 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 
 					Map<String,String> features = annotation.getFeatures();
 					add(features, Features.Token.LEMMA, label.lemma());
-					add(features, Features.NamedEntity.CATEGORY, ner);
+					add(features, "category", label.category());
+					add(features, Features.Token.POS, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
+
+					add(features, "ner", label.ner());
+					add(features, "word", label.word());
 					view.addAnnotation(annotation);
 
 				}
 			}
 
+			//ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
 			String producer = this.getClass().getName() + ":" + Version.getVersion();
 			for (String type : types)
 			{
 				logger.info("{} produced by {}", type, producer);
 				view.addContains(type, producer, classifierName);
 			}
-         	Contains contains =view.addContains(Uri.NE, producer, classifierName);
-			contains.put("classifierName", classifierName);
+//         view.addContains(Uri.NE, producer, "ner:stanford");
+			container.getViews().add(view);
 		}
 		data.setDiscriminator(Uri.LAPPS);
 		data.setPayload(container);
@@ -281,6 +293,29 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 		return classifier;
 	}
 
+	private String getUriForType(String type)
+	{
+		if ("PERSON".equals(type)) return Uri.PERSON;
+		if ("DATE".equals(type)) return Uri.DATE;
+		if ("LOCATION".equals(type)) return Uri.LOCATION;
+		if ("ORGANIZATION".equals(type)) return Uri.ORGANIZATION;
+		if ("MISC".equals(type)) return Uri.NE;
+		return type;
+	}
+
+	private String correctCase(String item)
+	{
+//      String head = item.substring(0, 1);
+//      String tail = item.substring(1).toLowerCase();
+//      return head + tail;
+		String uri = nameMap.get(item);
+		if (uri == null)
+		{
+			return item;
+		}
+		return uri;
+	}
+
 	private void add(Map<String,String> features, String name, String value)
 	{
 		if (value != null)
@@ -288,4 +323,10 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			features.put(name, value);
 		}
 	}
+
+//   @Override
+//   public Data configure(Data arg0)
+//   {
+//      return DataFactory.error("Unsupported operation.");
+//   }
 }

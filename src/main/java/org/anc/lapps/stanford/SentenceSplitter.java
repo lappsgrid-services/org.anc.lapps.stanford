@@ -24,7 +24,6 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.discriminator.*;
 import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
-import org.lappsgrid.serialization.DataContainer;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Annotations;
@@ -116,9 +115,7 @@ public class SentenceSplitter extends AbstractStanfordService
             }
             else
             {
-               DataContainer dc = Serializer.parse(input, DataContainer.class);
-               container = dc.getPayload();
-//               container = new Container((Map) data.getPayload());
+               container = new Container((Map) data.getPayload());
             }
             break;
          default:
