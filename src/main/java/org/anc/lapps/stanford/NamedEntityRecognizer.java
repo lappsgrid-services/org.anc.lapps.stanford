@@ -49,7 +49,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
         name = "Stanford Named Entity Recognizer",
         description = "Stanford Named Entity Recognizer",
         requires = "token",
-        produces = {"date", "person", "location", "organization"}
+        produces = {"ne"}
 )
 public class NamedEntityRecognizer extends AbstractStanfordService
 {
@@ -174,7 +174,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       
       if (labels == null)
       {
-         String message = "Unable to initialize a list of Stanford CoreLabels.";
+         String message = "INVALID INPUT: Unable to find Tokens with POS tags.";
          logger.warn(message);
          return createError(message);
       }
@@ -207,7 +207,7 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
       if (classifiedLabels != null)
       {
-         Set<String> types = new HashSet<String>();
+//         Set<String> types = new HashSet<String>();
          IDGenerator id = new IDGenerator();
          View view = new View();
          String invalidNer = "O";
@@ -217,20 +217,25 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             if (!ner.equals(invalidNer))
             {
                Annotation annotation = new Annotation();
-               String type = getUriForType(ner);
-               types.add(type);
+//               String type = getUriForType(ner);
+//               types.add(type);
+               annotation.setAtType(Uri.NE);
+               annotation.addFeature(Features.NamedEntity.CATEGORY, ner);
                annotation.setLabel(ner);
-               annotation.setAtType(type);
-//               annotation.setLabel(correctCase(ner));
                annotation.setId(id.generate("ne"));
                long start = label.beginPosition();
                long end = label.endPosition();
                annotation.setStart(start);
                annotation.setEnd(end);
 
+//               type = label.category();
+//               if (type == null)
+//               {
+//                  type = ner;
+//               }
                Map<String,String> features = annotation.getFeatures();
                add(features, Features.Token.LEMMA, label.lemma());
-               add(features, "category", label.category());
+               add(features, Features.NamedEntity.CATEGORY, ner);
                add(features, Features.Token.POS, label.get(CoreAnnotations.PartOfSpeechAnnotation.class));
 
                add(features, "ner", label.ner());
@@ -242,10 +247,11 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 
          //ProcessingStep step = Converter.addTokens(new ProcessingStep(), labels);
          String producer = this.getClass().getName() + ":" + Version.getVersion();
-         for (String type : types)
-         {
-            view.addContains(type, producer, "ner:stanford");
-         }
+//         for (String type : types)
+//         {
+//            view.addContains(type, producer, "ner:stanford");
+//         }
+         view.addContains(Uri.NE, producer, "ner:stanford");
 //         view.addContains(Uri.NE, producer, "ner:stanford");
          container.getViews().add(view);
       }
@@ -255,28 +261,25 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       return Serializer.toJson(data);
    }
 
-   private String getUriForType(String type)
-   {
-      if ("PERSON".equals(type)) return Uri.PERSON;
-      if ("DATE".equals(type)) return Uri.DATE;
-      if ("LOCATION".equals(type)) return Uri.LOCATION;
-      if ("ORGANIZATION".equals(type)) return Uri.ORGANIZATION;
-      if ("MISC".equals(type)) return Uri.NE;
-      return type;
-   }
+//   private String getUriForType(String type)
+//   {
+//      if ("PERSON".equals(type)) return Uri.PERSON;
+//      if ("DATE".equals(type)) return Uri.DATE;
+//      if ("LOCATION".equals(type)) return Uri.LOCATION;
+//      if ("ORGANIZATION".equals(type)) return Uri.ORGANIZATION;
+//      if ("MISC".equals(type)) return Uri.NE;
+//      return type;
+//   }
 
-   private String correctCase(String item)
-   {
-//      String head = item.substring(0, 1);
-//      String tail = item.substring(1).toLowerCase();
-//      return head + tail;
-      String uri = nameMap.get(item);
-      if (uri == null)
-      {
-         return item;
-      }
-      return uri;
-   }
+//   private String correctCase(String item)
+//   {
+//      String uri = nameMap.get(item);
+//      if (uri == null)
+//      {
+//         return item;
+//      }
+//      return uri;
+//   }
 
    private void add(Map<String,String> features, String name, String value)
    {

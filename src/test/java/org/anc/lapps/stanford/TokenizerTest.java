@@ -2,10 +2,14 @@ package org.anc.lapps.stanford;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.lappsgrid.discriminator.Discriminators.Uri;
 
@@ -115,7 +119,7 @@ public class TokenizerTest
       ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
 //      TestUtils.check(Tokenizer.class.getName(), metadata.getName());
-      TestUtils.check("http://www.anc.org", metadata.getVendor());
+      TestUtils.check("http://www.lappsgrid.org", metadata.getVendor());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
 
       IOSpecification io = metadata.getRequires();
@@ -130,6 +134,25 @@ public class TokenizerTest
       assert Uri.LIF.equals(formats.get(0));
    }
 
+   @Test
+   public void karenFlew()
+   {
+      InputStream stream = this.getClass().getResourceAsStream("/karen-flew.lif");
+      assertNotNull(stream);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+      String json = reader.lines().collect(Collectors.joining("\n"));
+      System.out.println(json);
+      WebService tokenizer = new Tokenizer();
+      json = tokenizer.execute(json);
+      assertNotNull(json);
+
+      Data data = Serializer.parse(json);
+      assertNotNull(data);
+      assertEquals(Uri.LIF, data.getDiscriminator());
+      Container container = new Container((Map) data.getPayload());
+      assertEquals("Karen flew to New York.", container.getText());
+      System.out.println(data.asPrettyJson());
+   }
 //   private void check(String expected, String actual)
 //   {
 //      if (!actual.equals(expected))
