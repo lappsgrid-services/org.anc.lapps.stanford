@@ -209,7 +209,7 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 				return DataFactory.error("CONTAINER ERROR: Unable to create a new view");
 			}
 			logger.info("There are {} labels.", classifiedLabels.size());
-			Set<String> types = new HashSet<String>();
+//			Set<String> types = new HashSet<String>();
 			IDGenerator id = new IDGenerator();
 			String invalidNer = "O";
 			for (CoreLabel label : classifiedLabels)
@@ -236,12 +236,12 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 			}
 
 			String producer = this.getClass().getName() + ":" + Version.getVersion();
-			for (String type : types)
-			{
-				logger.info("{} produced by {}", type, producer);
-				view.addContains(type, producer, classifierName);
-			}
-         view.addContains(Uri.NE, producer, classifierName);
+//			for (String type : types)
+//			{
+//				logger.info("{} produced by {}", type, producer);
+//				view.addContains(type, producer, classifierName);
+//			}
+         	view.addContains(Uri.NE, producer, classifierName);
 		}
 		data.setDiscriminator(Uri.LAPPS);
 		data.setPayload(container);

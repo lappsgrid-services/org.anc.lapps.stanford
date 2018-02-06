@@ -119,7 +119,7 @@ public class TokenizerTest
       ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
       assertNotNull("Unable to parse metadata.", metadata);
 //      TestUtils.check(Tokenizer.class.getName(), metadata.getName());
-      TestUtils.check("http://www.lappsgrid.org", metadata.getVendor());
+      TestUtils.check(TestUtils.VENDOR, metadata.getVendor());
       TestUtils.check(Version.getVersion(), metadata.getVersion());
 
       IOSpecification io = metadata.getRequires();
@@ -151,6 +151,7 @@ public class TokenizerTest
       assertEquals(Uri.LIF, data.getDiscriminator());
       Container container = new Container((Map) data.getPayload());
       assertEquals("Karen flew to New York.", container.getText());
+      assertEquals(1, container.getViews().size());
       System.out.println(data.asPrettyJson());
    }
 //   private void check(String expected, String actual)

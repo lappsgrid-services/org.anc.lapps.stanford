@@ -24,6 +24,7 @@ import org.anc.lapps.stanford.util.Converter;
 import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.DataContainer;
+import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.View;
 import org.lappsgrid.serialization.lif.Container;
@@ -89,13 +90,6 @@ public class Tokenizer extends AbstractStanfordService
             container.setText(text);
             break;
          case Uri.LIF:
-//         case Uri.JSON:
-//         case Uri.JSON_LD:
-//            Map payloadMap = (Map) map.get("payload");
-//            text = payloadMap.get("text").toString();
-//            container = new Container();
-//            container.setText(text);
-//            container = new Container((Map)map.get("payload"));
             DataContainer data = Serializer.parse(input, DataContainer.class);
             container = data.getPayload();
             text = container.getText();
@@ -123,15 +117,20 @@ public class Tokenizer extends AbstractStanfordService
          return createError("PTBTokenizer returned no tokens.");
       }
 
-      View view = Converter.addTokens(new View(), tokens);
+      View view = null;
+      try
+      {
+         view = container.newView();
+      }
+      catch (LifException e)
+      {
+         return createError("Unable to create a new view.");
+      }
+      view = Converter.addTokens(view, tokens);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       //TODO The type field should be set to something more appropriate.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/4
       view.addContains(Uri.TOKEN, producer, "stanford");
-//      Map<String,String> metadata = step.getMetadata();
-//      metadata.put(Metadata.PRODUCED_BY, name);
-//      metadata.put(Metadata.CONTAINS, Annotations.TOKEN);
-      container.getViews().add(view);
       map = null;
       Data<Container> data = new Data<Container>();
       data.setDiscriminator(Uri.LAPPS);

@@ -25,6 +25,7 @@ import org.lappsgrid.discriminator.*;
 import org.lappsgrid.annotations.ServiceMetadata;
 import org.lappsgrid.serialization.Data;
 import org.lappsgrid.serialization.DataContainer;
+import org.lappsgrid.serialization.LifException;
 import org.lappsgrid.serialization.Serializer;
 import org.lappsgrid.serialization.lif.*;
 import org.lappsgrid.vocabulary.Annotations;
@@ -131,16 +132,6 @@ public class SentenceSplitter extends AbstractStanfordService
       }
 
       Annotation document = new Annotation(container.getText());
-//      Data<Container> data = new Data<Container>();
-//      StanfordCoreNLP service = null;
-//      try
-//      {
-         //service = pool.take();
-//         service = pool.poll(DELAY, UNIT);
-//         if (service == null) {
-//            logger.warn("The SentenceSplitter was unable to respond to a request in a timely fashion.");
-//            return DataFactory.error(Messages.BUSY);
-//         }
 
       if (service == null)
       {
@@ -153,27 +144,20 @@ public class SentenceSplitter extends AbstractStanfordService
 
       service.annotate(document);
       List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-      View view = Converter.addSentences(new View(), sentences);
+      View view = null;
+      try
+      {
+         view = container.newView();
+      }
+      catch (LifException e)
+      {
+         return createError("Unable to create new view. " + e.getMessage());
+      }
+      view = Converter.addSentences(view, sentences);
       String producer = this.getClass().getName() + ":" + Version.getVersion();
-//      view.addContains(Annotations.TOKEN, producer, "tokenization:stanford");
       view.addContains(Uri.SENTENCE, producer, "sentence:stanford");
-      container.getViews().add(view);
       data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
-      //data = DataFactory.json(container.toJson());
-
-//      }
-//      catch (InterruptedException e)
-//      {
-//         data = DataFactory.error(e.getMessage());
-//      }
-//      finally
-//      {
-//         if (service != null)
-//         {
-//            pool.add(service);
-//         }
-//      }
       logger.info("Sentence splitter complete.");
       return data.asJson();
    }
