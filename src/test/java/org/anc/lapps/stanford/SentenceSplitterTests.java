@@ -92,7 +92,7 @@ public class SentenceSplitterTests
 		ServiceMetadata metadata = new ServiceMetadata((Map)data.getPayload());
 		assertNotNull("Unable to parse metadata.", metadata);
 
-		TestUtils.check("http://www.anc.org", metadata.getVendor());
+		TestUtils.check(TestUtils.VENDOR, metadata.getVendor());
 		TestUtils.check(Version.getVersion(), metadata.getVersion());
 
 		IOSpecification io = metadata.getProduces();

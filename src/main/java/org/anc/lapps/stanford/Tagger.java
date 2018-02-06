@@ -178,11 +178,6 @@ public class Tagger extends AbstractStanfordService
       }
       String producer = this.getClass().getName() + ":" + Version.getVersion();
       step.addContains(Uri.POS, producer, Contents.TagSets.PENN);
-//      container.getViews().add(step);
-
-//      data.setDiscriminator(Constants.Uri.JSON_LD);
-//      data.setPayload(container);
-//      return data.asJson();
       return new Data<Container>(Uri.LAPPS, container).asJson();
    }
    

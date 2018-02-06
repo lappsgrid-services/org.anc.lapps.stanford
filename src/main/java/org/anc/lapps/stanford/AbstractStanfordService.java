@@ -37,7 +37,7 @@ import static org.lappsgrid.discriminator.Discriminators.Uri;
  * @author Keith Suderman
  */
 @CommonMetadata(
-	vendor = "http://www.lappsgrid.org",
+	vendor = "http://www.anc.org",
 	//license = "Stanford CoreNLP is licensed under `the GNU General Public License <https://stanfordnlp.github.io/CoreNLP/#license>`_.",
     license = "gpl3",
 	format = "lif",

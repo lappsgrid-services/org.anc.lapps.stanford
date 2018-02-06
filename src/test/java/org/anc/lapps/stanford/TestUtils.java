@@ -16,6 +16,8 @@ public class TestUtils
 
 	}
 
+	public static final String VENDOR = "http://www.anc.org";
+
 	public static void check(String expected, String actual)
 	{
 		if (!actual.equals(expected))

@@ -132,11 +132,6 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       {
          return createError("Unable to parse input.");
       }
-//      String payload = map.get("payload");
-//      if (payload == null)
-//      {
-//         return createError(Messages.MISSING_PAYLOAD);
-//      }
 
       String discriminator = data.getDiscriminator();
 		logger.info("Discriminator is {}", discriminator);
@@ -209,7 +204,16 @@ public class NamedEntityRecognizer extends AbstractStanfordService
       {
 //         Set<String> types = new HashSet<String>();
          IDGenerator id = new IDGenerator();
-         View view = new View();
+         View view = null;
+         try
+         {
+            view = container.newView();
+         }
+         catch (LifException e)
+         {
+            return createError("Unable to create a new view. " + e.getMessage());
+         }
+
          String invalidNer = "O";
          for (CoreLabel label : classifiedLabels)
          {
@@ -253,7 +257,6 @@ public class NamedEntityRecognizer extends AbstractStanfordService
 //         }
          view.addContains(Uri.NE, producer, "ner:stanford");
 //         view.addContains(Uri.NE, producer, "ner:stanford");
-         container.getViews().add(view);
       }
       data.setDiscriminator(Uri.LAPPS);
       data.setPayload(container);
