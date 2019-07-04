@@ -221,8 +221,6 @@ public class NamedEntityRecognizer extends AbstractStanfordService
             if (!ner.equals(invalidNer))
             {
                Annotation annotation = new Annotation();
-//               String type = getUriForType(ner);
-//               types.add(type);
                annotation.setAtType(Uri.NE);
                annotation.addFeature(Features.NamedEntity.CATEGORY, ner);
                annotation.setLabel(ner);
@@ -232,11 +230,6 @@ public class NamedEntityRecognizer extends AbstractStanfordService
                annotation.setStart(start);
                annotation.setEnd(end);
 
-//               type = label.category();
-//               if (type == null)
-//               {
-//                  type = ner;
-//               }
                Map<String,String> features = annotation.getFeatures();
                add(features, Features.Token.LEMMA, label.lemma());
                add(features, Features.NamedEntity.CATEGORY, ner);

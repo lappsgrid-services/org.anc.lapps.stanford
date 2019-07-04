@@ -33,13 +33,15 @@ import org.lappsgrid.vocabulary.Contents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.lappsgrid.discriminator.Discriminators.Uri;
+import static org.lappsgrid.discriminator.Discriminators.*;
 
 @ServiceMetadata(
         name = "Stanford Tokenizer",
@@ -61,49 +63,38 @@ public class Tokenizer extends AbstractStanfordService
    {
       logger.info("Executing Stanford stand-alone tokenizer");
       Container container = null;
-      Map<String,Object> map = Serializer.parse(input, HashMap.class);
+      Data data = null;
 
-      Object object = map.get("discriminator");
-      if (object == null)
-      {
-         return createError(Messages.MISSING_DISCRIMINATOR);
+      try {
+         data = Serializer.parse(input);
       }
-      String discriminator = object.toString();
-      if (isError(discriminator))
-      {
+      catch (Exception e) {
+         StringWriter writer = new StringWriter();
+         e.printStackTrace(new PrintWriter(writer));
+         data.setDiscriminator(Uri.ERROR);
+         data.setPayload(writer.toString());
+         return data.asJson();
+      }
+
+      if (Uri.ERROR.equals(data.getDiscriminator())) {
          return input;
       }
 
       String text = null;
-      String json = null;
-      switch(discriminator) {
-         case Uri.ERROR:
-            json = input;
-            break;
+      switch(data.getDiscriminator()) {
          case Uri.TEXT:
-            Object payload = map.get("payload");
-            if (payload == null)
-            {
-               return createError(Messages.MISSING_PAYLOAD);
-            }
-            text = payload.toString();
+            text = data.getPayload().toString();
             container = new Container();
             container.setText(text);
             break;
          case Uri.LIF:
-            DataContainer data = Serializer.parse(input, DataContainer.class);
-            container = data.getPayload();
+            container = new Container((Map)data.getPayload());
             text = container.getText();
             break;
          case Uri.GETMETADATA:
-            json = super.getMetadata();
-            break;
+            return super.getMetadata();
          default:
-            json = createError(Messages.UNSUPPORTED_INPUT_TYPE + discriminator);
-      }
-      if (json != null)
-      {
-         return json;
+            return createError(Messages.UNSUPPORTED_INPUT_TYPE + data.getDiscriminator());
       }
 
       List<CoreLabel> tokens = new ArrayList<CoreLabel>();
@@ -132,10 +123,7 @@ public class Tokenizer extends AbstractStanfordService
       //TODO The type field should be set to something more appropriate.
       // See https://github.com/oanc/org.anc.lapps.stanford/issues/4
       view.addContains(Uri.TOKEN, producer, Contents.Tokenizations.STANFORD);
-      container.getViews().add(view);
-      map = null;
-      Data<Container> data = new Data<Container>();
-      data.setDiscriminator(Uri.LAPPS);
+      data.setDiscriminator(Uri.LIF);
       data.setPayload(container);
       return Serializer.toJson(data);
    }

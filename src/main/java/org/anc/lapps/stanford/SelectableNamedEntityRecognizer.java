@@ -242,7 +242,7 @@ public class SelectableNamedEntityRecognizer extends AbstractStanfordService
 //				logger.info("{} produced by {}", type, producer);
 //				view.addContains(type, producer, classifierName);
 //			}
-         	Contains contains =view.addContains(Uri.NE, producer, classifierName);
+         	Contains contains = view.addContains(Uri.NE, producer, "ner:stanford:" + classifierName);
 			contains.put("classifierName", classifierName);
 		}
 		data.setDiscriminator(Uri.LAPPS);
